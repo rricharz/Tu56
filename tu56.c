@@ -19,13 +19,16 @@
 #define REELDX		   1439
 #define REELDY			526
 
+int buttonx[6] = {198, 546, 741, 1099, 1453, 1649};
+int buttony[6] = {78, 78, 78, 78, 78, 78};
+
 
 struct {
   cairo_surface_t *image;
   cairo_surface_t *light1on, *lightoff, *light2on;
-  cairo_surface_t *reelA[3], *reelB[3], *reelC[3], *reelD[3];
+  cairo_surface_t *reelA[3], *reelB[3], *reelC[3], *reelD[3], *button[3];
   double angle;
-  int light1, light2, tape1, tape2;
+  int light1, light2, tape1, tape2, buttonstate[6];
   long counter;
   int reelAindex, reelCindex; 
 } glob;
@@ -91,7 +94,12 @@ static void do_drawing(cairo_t *cr)
 		cairo_paint(cr);
 	}
 	glob.reelCindex = index;
-	    
+	
+	for (int i = 0; i < 6; i++) {	
+		cairo_set_source_surface(cr, glob.button[glob.buttonstate[i]], buttonx[i], buttony[i]);
+		cairo_paint(cr);
+	}
+   
 }
 
 static void do_animation()
@@ -103,9 +111,13 @@ static void do_animation()
 	
 	if ((glob.counter % 32) == 0) {
 		glob.light2 = !glob.light2;
+		glob.buttonstate[0]++;
+		if (glob.buttonstate[0] > 2) glob.buttonstate[0] = 0;
+		glob.buttonstate[3]++;
+		if (glob.buttonstate[3] > 2) glob.buttonstate[3] = 0;
 	}
 	
-	glob.light1 = glob.light2;
+	glob.light1 = (glob.buttonstate[0] == 1);
 	
 	glob.tape1 = glob.light2;
 	glob.tape2 = !glob.light2;
@@ -123,7 +135,7 @@ static gboolean on_timer_event(GtkWidget *widget)
 cairo_surface_t* readpng(char* s)
 {
 	cairo_surface_t *t = cairo_image_surface_create_from_png(s);
-	if (cairo_surface_status(t)) {
+	if ((t == 0) || cairo_surface_status(t)) {
 		printf("Cannot load %s\n",s);
 		exit(1);
 	}
@@ -151,6 +163,9 @@ int main(int argc, char *argv[])
   glob.reelD[0]   = readpng("reelD0.png");
   glob.reelD[1]   = readpng("reelD1.png");
   glob.reelD[2]   = readpng("reelD2.png");
+  glob.button[0]  = readpng("button0.png");
+  glob.button[1]  = readpng("button1.png");
+  glob.button[2]  = readpng("button2.png");
   
   glob.angle = 0.0;
   glob.light1 = 0;
@@ -160,6 +175,12 @@ int main(int argc, char *argv[])
   glob.counter = 0;
   glob.reelAindex = -1;
   glob.reelCindex = -1;
+  glob.buttonstate[0] = 0;
+  glob.buttonstate[1] = 0;
+  glob.buttonstate[2] = 0;
+  glob.buttonstate[3] = 0;
+  glob.buttonstate[4] = 0;
+  glob.buttonstate[5] = 0;
 
   gtk_init(&argc, &argv);
 
