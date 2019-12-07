@@ -8,6 +8,8 @@
 
 #define LIGHT1X         130
 #define LIGHT1Y			 83
+#define LIGHT2X         814
+#define LIGHT2Y			 77
 #define REEL1X			 54
 #define REEL1Y			524
 #define REEL2X			520
@@ -16,10 +18,11 @@
 
 struct {
   cairo_surface_t *image;
-  cairo_surface_t *light1on, *light1off, *reel[4];
+  cairo_surface_t *light1on, *lightoff, *light2on, *reel[4];
   double angle;
-  int light1;
-  long counter; 
+  int light1, light2;
+  long counter;
+  int index; 
 } glob;
 
 
@@ -35,21 +38,29 @@ static gboolean on_draw_event(GtkWidget *widget, cairo_t *cr,
 
 static void do_drawing(cairo_t *cr)
 {
-	int index;
+	
 	cairo_set_source_surface(cr, glob.image, 0, 0);
 	cairo_paint(cr);
+	
 	if (glob.light1) {
 		cairo_set_source_surface(cr, glob.light1on, LIGHT1X, LIGHT1Y);
-		index = 1 + (glob.counter % 2);
 	}
 	else {
-		cairo_set_source_surface(cr, glob.light1off, LIGHT1X, LIGHT1Y);
-		index = 0;
+		cairo_set_source_surface(cr, glob.lightoff, LIGHT1X, LIGHT1Y);
 	}
 	cairo_paint(cr);
-	cairo_set_source_surface(cr, glob.reel[index], REEL1X, REEL1Y);
+	
+	if (glob.light2) {
+		cairo_set_source_surface(cr, glob.light2on, LIGHT2X, LIGHT2Y);
+	}
+	else {
+		cairo_set_source_surface(cr, glob.lightoff, LIGHT2X, LIGHT2Y);
+	}
 	cairo_paint(cr);
-	cairo_set_source_surface(cr, glob.reel[index], REEL2X, REEL2Y);
+	
+	cairo_set_source_surface(cr, glob.reel[glob.index], REEL1X, REEL1Y);
+	cairo_paint(cr);
+	cairo_set_source_surface(cr, glob.reel[glob.index], REEL2X, REEL2Y);
 	cairo_paint(cr);
 	    
 }
@@ -61,8 +72,18 @@ static void do_animation()
 	
 	glob.counter++;
 	
-	if ((glob.counter % 32) == 0)
-		glob.light1 = !glob.light1;
+	if ((glob.counter % 32) == 0) {
+		glob.light2 = !glob.light2;
+	}
+	
+	glob.light1 = glob.light2;
+	
+	if (glob.light2) {
+		glob.index = 1 + (glob.counter % 2);
+	}
+	else {
+		glob.index = 0;
+	}
 }
 
 static gboolean on_timer_event(GtkWidget *widget)
@@ -73,21 +94,33 @@ static gboolean on_timer_event(GtkWidget *widget)
 	return TRUE;
 }
 
+cairo_surface_t* readpng(char* s)
+{
+	cairo_surface_t *t = cairo_image_surface_create_from_png(s);
+	if (t == 0) {
+		printf("Cannot find %s\n",s);
+		exit(1);
+	}
+	return t;
+}
+
 int main(int argc, char *argv[])
 {
   GtkWidget *window;
   GtkWidget *darea;
   
-  glob.image = cairo_image_surface_create_from_png("front2.png");
-  glob.light1on = cairo_image_surface_create_from_png("light1on.png");
-  glob.light1off = cairo_image_surface_create_from_png("light1off.png");
-  glob.reel[0] = cairo_image_surface_create_from_png("reelA0.png");
-  glob.reel[1] = cairo_image_surface_create_from_png("reelA1.png");
-  glob.reel[2] = cairo_image_surface_create_from_png("reelA2.png");
-  glob.reel[3] = cairo_image_surface_create_from_png("reelA3.png");
+  glob.image     = readpng("front.png");
+  glob.light1on  = readpng("light1on.png");
+  glob.light2on  = readpng("light2on.png");
+  glob.lightoff  = readpng("lightoff.png");
+  glob.reel[0]   = readpng("reelA0.png");
+  glob.reel[1]   = readpng("reelA1.png");
+  glob.reel[2]   = readpng("reelA2.png");
+  glob.reel[3]   = readpng("reelA3.png");
   
   glob.angle = 0.0;
   glob.light1 = 0;
+  glob.light2 = 0;
   glob.counter = 0;
 
   gtk_init(&argc, &argv);
