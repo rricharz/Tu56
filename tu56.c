@@ -18,7 +18,7 @@
 
 struct {
   cairo_surface_t *image;
-  cairo_surface_t *light1on, *lightoff, *light2on, *reel[4];
+  cairo_surface_t *light1on, *lightoff, *light2on, *reelA[3], *reelB[3];
   double angle;
   int light1, light2;
   long counter;
@@ -58,9 +58,9 @@ static void do_drawing(cairo_t *cr)
 	}
 	cairo_paint(cr);
 	
-	cairo_set_source_surface(cr, glob.reel[glob.index], REEL1X, REEL1Y);
+	cairo_set_source_surface(cr, glob.reelA[glob.index], REEL1X, REEL1Y);
 	cairo_paint(cr);
-	cairo_set_source_surface(cr, glob.reel[glob.index], REEL2X, REEL2Y);
+	cairo_set_source_surface(cr, glob.reelB[glob.index], REEL2X, REEL2Y);
 	cairo_paint(cr);
 	    
 }
@@ -97,8 +97,8 @@ static gboolean on_timer_event(GtkWidget *widget)
 cairo_surface_t* readpng(char* s)
 {
 	cairo_surface_t *t = cairo_image_surface_create_from_png(s);
-	if (t == 0) {
-		printf("Cannot find %s\n",s);
+	if (cairo_surface_status(t)) {
+		printf("Cannot load %s\n",s);
 		exit(1);
 	}
 	return t;
@@ -113,10 +113,12 @@ int main(int argc, char *argv[])
   glob.light1on  = readpng("light1on.png");
   glob.light2on  = readpng("light2on.png");
   glob.lightoff  = readpng("lightoff.png");
-  glob.reel[0]   = readpng("reelA0.png");
-  glob.reel[1]   = readpng("reelA1.png");
-  glob.reel[2]   = readpng("reelA2.png");
-  glob.reel[3]   = readpng("reelA3.png");
+  glob.reelA[0]   = readpng("reelA0.png");
+  glob.reelA[1]   = readpng("reelA1.png");
+  glob.reelA[2]   = readpng("reelA2.png");
+  glob.reelB[0]   = readpng("reelB0.png");
+  glob.reelB[1]   = readpng("reelB1.png");
+  glob.reelB[2]   = readpng("reelB2.png");
   
   glob.angle = 0.0;
   glob.light1 = 0;
