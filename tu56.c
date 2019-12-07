@@ -10,19 +10,24 @@
 #define LIGHT1Y			 83
 #define LIGHT2X         814
 #define LIGHT2Y			 77
-#define REEL1X			 54
-#define REEL1Y			524
-#define REEL2X			520
-#define REEL2Y			524
+#define REELAX			 52
+#define REELAY			524
+#define REELBX			513
+#define REELBY			525
+#define REELCX			979
+#define REELCY			524
+#define REELDX		   1439
+#define REELDY			526
 
 
 struct {
   cairo_surface_t *image;
-  cairo_surface_t *light1on, *lightoff, *light2on, *reelA[3], *reelB[3];
+  cairo_surface_t *light1on, *lightoff, *light2on;
+  cairo_surface_t *reelA[3], *reelB[3], *reelC[3], *reelD[3];
   double angle;
-  int light1, light2;
+  int light1, light2, tape1, tape2;
   long counter;
-  int index; 
+  int reelAindex, reelCindex; 
 } glob;
 
 
@@ -38,6 +43,7 @@ static gboolean on_draw_event(GtkWidget *widget, cairo_t *cr,
 
 static void do_drawing(cairo_t *cr)
 {
+	int index;
 	
 	cairo_set_source_surface(cr, glob.image, 0, 0);
 	cairo_paint(cr);
@@ -58,10 +64,33 @@ static void do_drawing(cairo_t *cr)
 	}
 	cairo_paint(cr);
 	
-	cairo_set_source_surface(cr, glob.reelA[glob.index], REEL1X, REEL1Y);
-	cairo_paint(cr);
-	cairo_set_source_surface(cr, glob.reelB[glob.index], REEL2X, REEL2Y);
-	cairo_paint(cr);
+	if (glob.tape1) {
+		index = 1 + (glob.counter % 2);
+	}
+	else {
+		index = 0;
+	}
+	if (index != glob.reelAindex) {
+		cairo_set_source_surface(cr, glob.reelA[index], REELAX, REELAY);
+		cairo_paint(cr);
+		cairo_set_source_surface(cr, glob.reelB[index], REELBX, REELBY);
+		cairo_paint(cr);
+	}
+	glob.reelAindex = index;
+	
+	if (glob.tape2) {
+		index = 1 + (glob.counter % 2);
+	}
+	else {
+		index = 0;
+	}
+	if (index != glob.reelCindex) {
+		cairo_set_source_surface(cr, glob.reelC[index], REELCX, REELCY);
+		cairo_paint(cr);
+		cairo_set_source_surface(cr, glob.reelD[index], REELDX, REELDY);
+		cairo_paint(cr);
+	}
+	glob.reelCindex = index;
 	    
 }
 
@@ -78,12 +107,9 @@ static void do_animation()
 	
 	glob.light1 = glob.light2;
 	
-	if (glob.light2) {
-		glob.index = 1 + (glob.counter % 2);
-	}
-	else {
-		glob.index = 0;
-	}
+	glob.tape1 = glob.light2;
+	glob.tape2 = !glob.light2;
+	
 }
 
 static gboolean on_timer_event(GtkWidget *widget)
@@ -119,11 +145,21 @@ int main(int argc, char *argv[])
   glob.reelB[0]   = readpng("reelB0.png");
   glob.reelB[1]   = readpng("reelB1.png");
   glob.reelB[2]   = readpng("reelB2.png");
+  glob.reelC[0]   = readpng("reelC0.png");
+  glob.reelC[1]   = readpng("reelC1.png");
+  glob.reelC[2]   = readpng("reelC2.png");
+  glob.reelD[0]   = readpng("reelD0.png");
+  glob.reelD[1]   = readpng("reelD1.png");
+  glob.reelD[2]   = readpng("reelD2.png");
   
   glob.angle = 0.0;
   glob.light1 = 0;
   glob.light2 = 0;
+  glob.tape1 = 0;
+  glob.tape2 = 0;
   glob.counter = 0;
+  glob.reelAindex = -1;
+  glob.reelCindex = -1;
 
   gtk_init(&argc, &argv);
 
