@@ -22,6 +22,9 @@
 int buttonx[6] = {198, 546, 741, 1099, 1453, 1649};
 int buttony[6] = {78, 78, 78, 78, 78, 78};
 
+#define BUTTONXSIZE		68
+#define BUTTONYSIZE		150
+
 
 struct {
   cairo_surface_t *image;
@@ -98,8 +101,7 @@ static void do_drawing(cairo_t *cr)
 	for (int i = 0; i < 6; i++) {	
 		cairo_set_source_surface(cr, glob.button[glob.buttonstate[i]], buttonx[i], buttony[i]);
 		cairo_paint(cr);
-	}
-   
+	}  
 }
 
 static void do_animation()
@@ -111,10 +113,6 @@ static void do_animation()
 	
 	if ((glob.counter % 32) == 0) {
 		glob.light2 = !glob.light2;
-		glob.buttonstate[0]++;
-		if (glob.buttonstate[0] > 2) glob.buttonstate[0] = 0;
-		glob.buttonstate[3]++;
-		if (glob.buttonstate[3] > 2) glob.buttonstate[3] = 0;
 	}
 	
 	glob.light1 = (glob.buttonstate[0] == 1);
@@ -126,10 +124,44 @@ static void do_animation()
 
 static gboolean on_timer_event(GtkWidget *widget)
 {
-	do_animation();
-	
+	do_animation();	
 	gtk_widget_queue_draw(widget);
 	return TRUE;
+}
+
+static gboolean on_click_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+{
+	// event-button = 1: means left mouse button; button = 3 means right mouse button    
+    // printf("on_click_event called, button %d, x = %d, y= %d\n", (int)event->button, (int)event->x, (int)event->y);
+    
+    if (event->button == 1) {
+		for (int i = 0; i < 6; i++) {
+			if ((event->x >= buttonx[i]) && (event->x <= buttonx[i] + BUTTONXSIZE) &&
+				(event->y >= buttony[i]) && (event->y <= buttony[i] + BUTTONYSIZE)) {
+					
+				if (event->y <= buttony[i] + (BUTTONYSIZE / 2)) {
+					if ((i == 0) || (i == 3))	// 2 state buttons
+						glob.buttonstate[i] = 1;
+					else if (glob.buttonstate[i] != 0)  // 3 state button
+						glob.buttonstate[i] = 0;
+					else
+						glob.buttonstate[i] = 1;
+						
+				}
+				else {
+					if ((i == 0) || (i == 3))	// 2 state buttons
+					glob.buttonstate[i] = 2;
+					else if (glob.buttonstate[i] != 0)  // 3 state button
+						glob.buttonstate[i] = 0;
+					else
+						glob.buttonstate[i] = 2;
+				}
+				gtk_widget_queue_draw(widget);
+				return TRUE;
+			} 
+		}
+	}
+    return TRUE;
 }
 
 cairo_surface_t* readpng(char* s)
@@ -197,6 +229,8 @@ int main(int argc, char *argv[])
   gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
   gtk_window_set_default_size(GTK_WINDOW(window), 1920, 1080); 
   gtk_window_set_title(GTK_WINDOW(window), "tu56");
+  
+  g_signal_connect(G_OBJECT(window), "button-press-event", G_CALLBACK(on_click_event), NULL);
   
   if (TIME_INTERVAL > 0) {
 		// Add timer event
