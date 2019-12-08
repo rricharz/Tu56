@@ -145,10 +145,34 @@ static gboolean on_timer_event(GtkWidget *widget)
 	return TRUE;
 }
 
-static gboolean on_click_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+static gboolean on_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
 	// event-button = 1: means left mouse button; button = 3 means right mouse button    
-    // printf("on_click_event called, button %d, x = %d, y= %d\n", (int)event->button, (int)event->x, (int)event->y);
+    // printf("on_button_release_event called, button %d, x = %d, y= %d\n", (int)event->button, (int)event->x, (int)event->y);
+	int x = (int)((double)event->x / glob.scale);
+    int y = (int)((double)event->y / glob.scale);
+    if (event->button == 1) {
+		if ((x >= buttonx[1]) && (x <= buttonx[1] + BUTTONXSIZE) &&
+			(y >= buttony[1]) && (y <= buttony[1] + BUTTONYSIZE)) {
+				glob.buttonstate[1] = 0;
+				do_logic();
+				gtk_widget_queue_draw(widget);
+				return TRUE;
+		}
+		if ((x >= buttonx[4]) && (x <= buttonx[4] + BUTTONXSIZE) &&
+			(y >= buttony[4]) && (y <= buttony[4] + BUTTONYSIZE)) {
+				glob.buttonstate[4] = 0;
+				do_logic();
+				gtk_widget_queue_draw(widget);
+				return TRUE;
+		}
+	}
+}
+
+static gboolean on_button_click_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+{
+	// event-button = 1: means left mouse button; button = 3 means right mouse button    
+    // printf("on_button_click_event called, button %d, x = %d, y= %d\n", (int)event->button, (int)event->x, (int)event->y);
     
     int x = (int)((double)event->x / glob.scale);
     int y = (int)((double)event->y / glob.scale);
@@ -220,7 +244,7 @@ int main(int argc, char *argv[])
   int argFullscreen = 0;
   int firstArg = 1;
   
-  printf("argc = %d\n", argc);
+  printf("tu56 version 0.1\n");
   
   while (firstArg < argc) {
 	if (strcmp(argv[firstArg],"-full") == 0)
@@ -264,14 +288,21 @@ int main(int argc, char *argv[])
   glob.reelCindex = -1;
   glob.buttonstate[0] = 0;
   glob.buttonstate[1] = 0;
-  glob.buttonstate[2] = 0;
+  glob.buttonstate[2] = 2;
   glob.buttonstate[3] = 0;
   glob.buttonstate[4] = 0;
-  glob.buttonstate[5] = 0;
+  glob.buttonstate[5] = 2;
 
   gtk_init(&argc, &argv);
 
   window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+  
+  // set the background color
+  GdkColor color;
+  color.red   = 0;
+  color.green = 0;
+  color.blue  = 0;
+  gtk_widget_modify_bg(window, GTK_STATE_NORMAL, &color);
 
   darea = gtk_drawing_area_new();
   gtk_container_add(GTK_CONTAINER (window), darea);
@@ -305,7 +336,8 @@ int main(int argc, char *argv[])
   
   gtk_window_set_title(GTK_WINDOW(window), "tu56");
   
-  g_signal_connect(G_OBJECT(window), "button-press-event", G_CALLBACK(on_click_event), NULL);
+  g_signal_connect(G_OBJECT(window), "button-press-event", G_CALLBACK(on_button_click_event), NULL);
+  g_signal_connect(G_OBJECT(window), "button-release-event", G_CALLBACK(on_button_release_event), NULL);
   g_signal_connect(G_OBJECT(window), "key_press_event", G_CALLBACK(on_key_press), NULL);
   
   if (TIME_INTERVAL > 0) {
