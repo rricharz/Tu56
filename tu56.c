@@ -1,15 +1,13 @@
 // tu56.c
 
+#define GDK_DISABLE_DEPRECATION_WARNINGS
+
 #include <cairo.h>
 #include <math.h>
 #include <gtk/gtk.h>
 
 #define TIME_INTERVAL    40		// timer interval in msec
 
-#define LIGHT1X         130
-#define LIGHT1Y			 83
-#define LIGHT2X         814
-#define LIGHT2Y			 77
 #define REELAX			 52
 #define REELAY			524
 #define REELBX			513
@@ -19,6 +17,8 @@
 #define REELDX		   1439
 #define REELDY			526
 
+int lightx[4]  = {131, 812, 1037, 1725};
+int lighty[4]  = {79, 77, 77, 77};
 int buttonx[6] = {198, 546, 741, 1099, 1453, 1649};
 int buttony[6] = {78, 78, 78, 78, 78, 78};
 
@@ -31,9 +31,10 @@ struct {
   cairo_surface_t *light1on, *lightoff, *light2on;
   cairo_surface_t *reelA[3], *reelB[3], *reelC[3], *reelD[3], *button[3];
   double angle;
-  int light1, light2, tape1, tape2, buttonstate[6];
+  int light[4], tape1, tape2, buttonstate[6];
   long counter;
-  int reelAindex, reelCindex; 
+  int reelAindex, reelCindex;
+  double scale;
 } glob;
 
 
@@ -51,22 +52,40 @@ static void do_drawing(cairo_t *cr)
 {
 	int index;
 	
+	cairo_scale(cr,glob.scale,glob.scale);
+	
 	cairo_set_source_surface(cr, glob.image, 0, 0);
 	cairo_paint(cr);
 	
-	if (glob.light1) {
-		cairo_set_source_surface(cr, glob.light1on, LIGHT1X, LIGHT1Y);
+	if (glob.light[0]) {
+		cairo_set_source_surface(cr, glob.light1on, lightx[0], lighty[0]);
 	}
 	else {
-		cairo_set_source_surface(cr, glob.lightoff, LIGHT1X, LIGHT1Y);
+		cairo_set_source_surface(cr, glob.lightoff, lightx[0], lighty[0]);
 	}
 	cairo_paint(cr);
 	
-	if (glob.light2) {
-		cairo_set_source_surface(cr, glob.light2on, LIGHT2X, LIGHT2Y);
+	if (glob.light[1]) {
+		cairo_set_source_surface(cr, glob.light2on, lightx[1], lighty[1]);
 	}
 	else {
-		cairo_set_source_surface(cr, glob.lightoff, LIGHT2X, LIGHT2Y);
+		cairo_set_source_surface(cr, glob.lightoff, lightx[1], lighty[1]);
+	}
+	cairo_paint(cr);
+	
+	if (glob.light[2]) {
+		cairo_set_source_surface(cr, glob.light1on, lightx[2], lighty[2]);
+	}
+	else {
+		cairo_set_source_surface(cr, glob.lightoff, lightx[2], lighty[2]);
+	}
+	cairo_paint(cr);
+	
+	if (glob.light[3]) {
+		cairo_set_source_surface(cr, glob.light2on, lightx[3], lighty[3]);
+	}
+	else {
+		cairo_set_source_surface(cr, glob.lightoff, lightx[3], lighty[3]);
 	}
 	cairo_paint(cr);
 	
@@ -104,28 +123,25 @@ static void do_drawing(cairo_t *cr)
 	}  
 }
 
-static void do_animation()
+static void do_logic()
 {
-	cairo_t *reel;
-	reel = cairo_create(glob.image);
 	
 	glob.counter++;
 	
-	if ((glob.counter % 32) == 0) {
-		glob.light2 = !glob.light2;
-	}
+	glob.light[0] = (glob.buttonstate[0] == 1);
+	glob.light[1] = (glob.buttonstate[2] == 1);
+	glob.light[2] = (glob.buttonstate[3] == 1);
+	glob.light[3] = (glob.buttonstate[5] == 1);
 	
-	glob.light1 = (glob.buttonstate[0] == 1);
-	
-	glob.tape1 = glob.light2;
-	glob.tape2 = !glob.light2;
+	glob.tape1 = (glob.buttonstate[1] != 0) && (glob.buttonstate[2] == 2);
+	glob.tape2 = (glob.buttonstate[4] != 0) && (glob.buttonstate[5] == 2);
 	
 }
 
 static gboolean on_timer_event(GtkWidget *widget)
 {
-	do_animation();	
-	gtk_widget_queue_draw(widget);
+	do_logic();	
+	if (glob.tape1 || glob.tape2) gtk_widget_queue_draw(widget);
 	return TRUE;
 }
 
@@ -134,12 +150,14 @@ static gboolean on_click_event(GtkWidget *widget, GdkEventButton *event, gpointe
 	// event-button = 1: means left mouse button; button = 3 means right mouse button    
     // printf("on_click_event called, button %d, x = %d, y= %d\n", (int)event->button, (int)event->x, (int)event->y);
     
+    int x = (int)((double)event->x / glob.scale);
+    int y = (int)((double)event->y / glob.scale);
     if (event->button == 1) {
 		for (int i = 0; i < 6; i++) {
-			if ((event->x >= buttonx[i]) && (event->x <= buttonx[i] + BUTTONXSIZE) &&
-				(event->y >= buttony[i]) && (event->y <= buttony[i] + BUTTONYSIZE)) {
+			if ((x >= buttonx[i]) && (x <= buttonx[i] + BUTTONXSIZE) &&
+				(y >= buttony[i]) && (y <= buttony[i] + BUTTONYSIZE)) {
 					
-				if (event->y <= buttony[i] + (BUTTONYSIZE / 2)) {
+				if (y <= buttony[i] + (BUTTONYSIZE / 2)) {
 					if ((i == 0) || (i == 3))	// 2 state buttons
 						glob.buttonstate[i] = 1;
 					else if (glob.buttonstate[i] != 0)  // 3 state button
@@ -156,13 +174,33 @@ static gboolean on_click_event(GtkWidget *widget, GdkEventButton *event, gpointe
 					else
 						glob.buttonstate[i] = 2;
 				}
+				do_logic();
 				gtk_widget_queue_draw(widget);
+				// printf("button state %d: %d\n",i,glob.buttonstate[i]);
 				return TRUE;
 			} 
 		}
 	}
     return TRUE;
 }
+
+static void on_quit_event()
+{
+	gtk_main_quit();
+    exit(0);
+}
+
+static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
+{
+    int ch;
+    // printf("key pressed, state =%04X, keyval =%04X\n", event->state, event->keyval);
+    if ((event->state == 0x4) && (event->keyval == 0x0063)) // ctrl-c
+		on_quit_event();
+	else if ((event->state == 0x4) && (event->keyval == 0x0071)) // ctrl-q
+		on_quit_event();
+	else if ((event->state == 0x0) && (event->keyval == 0xFF1B)) // esc
+		on_quit_event();	
+}        
 
 cairo_surface_t* readpng(char* s)
 {
@@ -178,6 +216,21 @@ int main(int argc, char *argv[])
 {
   GtkWidget *window;
   GtkWidget *darea;
+  
+  int argFullscreen = 0;
+  int firstArg = 1;
+  
+  printf("argc = %d\n", argc);
+  
+  while (firstArg < argc) {
+	if (strcmp(argv[firstArg],"-full") == 0)
+		argFullscreen = 1;                
+    else {
+        printf("tu56: unknown argument %s\n", argv[firstArg]);
+        exit(1);
+    }
+    firstArg++;
+  }
   
   glob.image     = readpng("front.png");
   glob.light1on  = readpng("light1on.png");
@@ -200,8 +253,10 @@ int main(int argc, char *argv[])
   glob.button[2]  = readpng("button2.png");
   
   glob.angle = 0.0;
-  glob.light1 = 0;
-  glob.light2 = 0;
+  glob.light[0] = 0;
+  glob.light[1] = 0;
+  glob.light[2] = 0;
+  glob.light[3] = 0;
   glob.tape1 = 0;
   glob.tape2 = 0;
   glob.counter = 0;
@@ -227,10 +282,31 @@ int main(int argc, char *argv[])
       G_CALLBACK (gtk_main_quit), NULL);
 
   gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
-  gtk_window_set_default_size(GTK_WINDOW(window), 1920, 1080); 
+  
+  GdkScreen *screen = gtk_window_get_screen(GTK_WINDOW(window));
+  int screenWidth = gdk_screen_get_width(screen);
+  int screenHeight = gdk_screen_get_height(screen);
+  printf("Screen dimensions: %d x %d\n", screenWidth, screenHeight);
+        
+  if (argFullscreen) {        
+    // DISPLAY UNDECORATED FULL SCREEN WINDOW
+	gtk_window_set_decorated(GTK_WINDOW(window), FALSE);
+	gtk_window_fullscreen(GTK_WINDOW(window));
+	gtk_window_set_keep_above(GTK_WINDOW(window), FALSE);
+	glob.scale = screenWidth / 1920.0;
+  }
+ 
+  else {
+    // DISPLAY DECORATED WINDOW
+    gtk_window_set_decorated(GTK_WINDOW(window), TRUE);
+    gtk_window_set_default_size(GTK_WINDOW(window), 960, 464);
+    glob.scale = 0.5;                
+  } 
+  
   gtk_window_set_title(GTK_WINDOW(window), "tu56");
   
   g_signal_connect(G_OBJECT(window), "button-press-event", G_CALLBACK(on_click_event), NULL);
+  g_signal_connect(G_OBJECT(window), "key_press_event", G_CALLBACK(on_key_press), NULL);
   
   if (TIME_INTERVAL > 0) {
 		// Add timer event
