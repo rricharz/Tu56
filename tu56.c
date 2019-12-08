@@ -52,6 +52,8 @@ static void do_drawing(cairo_t *cr)
 {
 	int index;
 	
+	// printf("do_drawing, glob.counter = %ld\n", glob.counter);
+	
 	cairo_scale(cr,glob.scale,glob.scale);
 	
 	cairo_set_source_surface(cr, glob.image, 0, 0);

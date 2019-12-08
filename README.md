@@ -2,6 +2,8 @@
 
 Simulation of TU56 DECtape, version 0.1
 
+For the Raspberry Pi and other Linux systems
+
 This unfinished version is operational, but supports only offline mode.
 The connection to simh has not yet been implemented.
 
@@ -11,14 +13,14 @@ The TU 56 DECtape had a very fast tape transportation speed for reads and writes
 Start the program with
 
   ./tu56			for a 960x464 decorated window
-  ./tu56 -full		for a full screen window
+  ./tu56 -full		for a full screen window, scaled to your display size
 
 All switches and lights are funktional. Click either in the upper or lower half of a switch.
 
 In order to transport tape in offline mode:
 
  - The right switch must be in the "local" position.
- - Click ond hold the center switch.
+ - Click and hold the center switch.
  
 The following keys can be used to exit from tu56 and close the corresponding window. These keys are
 especially useful in full screen mode where no close window button is available.
