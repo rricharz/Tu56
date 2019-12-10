@@ -1,0 +1,6 @@
+#!/bin/bash
+# putsource - copy file back to bsd source and compile
+
+sudo cp *.c /opt/pidp11/src/02.3_simh/4.x+realcons/src/PDP11
+cd /opt/pidp11/src/
+./makeclient.sh
