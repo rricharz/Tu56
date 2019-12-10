@@ -1,5 +1,11 @@
 /*
  * demoread.c
+ * 
+ * I have used this little program to test communication
+ * It doesn't do anything else then showing what the current
+ * status in /tmp/tu56status is.
+ * 
+ * tu56 uses the same mechanism to get the status from the host
  *
  * Copyright 2019  rricharz
  * 
@@ -22,11 +28,6 @@
  */
 
 #include <stdio.h>
-//#include <string.h>
-//#include <fcntl.h>
-//#include <sys/stat.h>
-//#include <sys/types.h>
-#include <unistd.h>
 
 int getStatus()
 {

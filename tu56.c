@@ -25,6 +25,13 @@
  * 
  */
 
+#define TSTATE_ONLINE		 1
+#define TSTATE_DRIVE1		 2
+#define TSTATE_BACKWARDS	 4
+#define TSTATE_SEEK			 8
+#define TSTATE_READ			16
+#define TSTATE_WRITE		32
+
 #define GDK_DISABLE_DEPRECATION_WARNINGS
 
 #include <cairo.h>
@@ -55,13 +62,32 @@ struct {
   cairo_surface_t *image;
   cairo_surface_t *light1on, *lightoff, *light2on;
   cairo_surface_t *reelA[3], *reelB[3], *reelC[3], *reelD[3], *button[3];
-  double angle;
   int light[4], tape1, tape2, buttonstate[6];
   long counter;
   int reelAindex, reelCindex;
   double scale;
+  int remote_status, last_remote_status;
 } glob;
 
+int getStatus()
+{
+	static FILE *statusFile = 0;
+	char *fname = "/tmp/tu56status";
+	int st;
+	
+	// file needs to be opened again each time to read new status
+	statusFile = fopen(fname, "r");
+		
+	if (statusFile != 0) {
+		st = getc(statusFile) - 32;
+		fclose(statusFile);
+		if (st >= 0)
+			return st;
+		else
+			return 0;
+	}
+	else return 0;
+}
 
 static void do_drawing(cairo_t *);
 
@@ -151,24 +177,52 @@ static void do_drawing(cairo_t *cr)
 }
 
 static void do_logic()
-{
-	
+{	
 	glob.counter++;
 	
-	glob.light[0] = (glob.buttonstate[0] == 1);
-	glob.light[1] = (glob.buttonstate[2] == 1);
-	glob.light[2] = (glob.buttonstate[3] == 1);
-	glob.light[3] = (glob.buttonstate[5] == 1);
+	glob.light[0] = 0;
+	glob.light[1] = 0;
+	glob.light[2] = 0;
+	glob.light[3] = 0;
 	
 	glob.tape1 = (glob.buttonstate[1] != 0) && (glob.buttonstate[2] == 2);
 	glob.tape2 = (glob.buttonstate[4] != 0) && (glob.buttonstate[5] == 2);
+	
+	if ((glob.buttonstate[2] == 1) || (glob.buttonstate[5] == 1)) {
+		// if remote is set in a drive
+		glob.remote_status = getStatus();
+		if (glob.last_remote_status != glob.remote_status)
+			printf("remote state = 0x%02x\n", glob.remote_status);
+		
+		// set the lights and motors
+		// for now it also flips the write enable button if necessary
+		if ((glob.remote_status & TSTATE_DRIVE1) && (glob.buttonstate[5] == 1)) {
+			if (glob.remote_status & TSTATE_WRITE)
+				glob.buttonstate[3] = 1;
+			glob.light[2] = (glob.remote_status & TSTATE_WRITE);
+			glob.light[3] = (glob.remote_status & TSTATE_ONLINE);
+			glob.tape2    = (glob.remote_status & (TSTATE_READ | TSTATE_WRITE | TSTATE_SEEK));
+		}
+		else if (glob.buttonstate[2] == 1) {
+			if (glob.remote_status & TSTATE_WRITE)
+				glob.buttonstate[0] = 1;
+			glob.light[0] = (glob.remote_status & TSTATE_WRITE);
+			glob.light[1] = (glob.remote_status & TSTATE_ONLINE);
+			glob.tape1    = (glob.remote_status & (TSTATE_READ | TSTATE_WRITE | TSTATE_SEEK));
+		}
+		
+	}
+	else
+		glob.remote_status = 0;
 	
 }
 
 static gboolean on_timer_event(GtkWidget *widget)
 {
 	do_logic();	
-	if (glob.tape1 || glob.tape2) gtk_widget_queue_draw(widget);
+	if (glob.tape1 || glob.tape2 || (glob.last_remote_status != glob.remote_status))
+		gtk_widget_queue_draw(widget);
+	glob.last_remote_status = glob.remote_status;
 	return TRUE;
 }
 
@@ -303,7 +357,6 @@ int main(int argc, char *argv[])
   glob.button[1]  = readpng("button1.png");
   glob.button[2]  = readpng("button2.png");
   
-  glob.angle = 0.0;
   glob.light[0] = 0;
   glob.light[1] = 0;
   glob.light[2] = 0;
@@ -315,10 +368,13 @@ int main(int argc, char *argv[])
   glob.reelCindex = -1;
   glob.buttonstate[0] = 0;
   glob.buttonstate[1] = 0;
-  glob.buttonstate[2] = 2;
+  glob.buttonstate[2] = 1;
   glob.buttonstate[3] = 0;
   glob.buttonstate[4] = 0;
-  glob.buttonstate[5] = 2;
+  glob.buttonstate[5] = 1;
+  
+  glob.last_remote_status = 0;
+  glob.last_remote_status = 0;
 
   gtk_init(&argc, &argv);
 

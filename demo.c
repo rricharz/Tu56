@@ -28,11 +28,12 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#define TSTATE_ONLINE		 1
-#define TSTATE_DRIVE1		 2
-#define TSTATE_BACKWARDS	 4
-#define TSTATE_SEEK			 8
-#define TSTATE_READWRITE	16
+#define TSTATE_ONLINE		 1		// Turns the online light on
+#define TSTATE_DRIVE1		 2		// Selects drive 0 or 1
+#define TSTATE_BACKWARDS	 4		// Sets the direction
+#define TSTATE_SEEK			 8		// Spins the reels
+#define TSTATE_READ			16		// Spins the reels
+#define TSTATE_WRITE		32		// Turns the write light on and spins the reels
 
 static FILE *statusFile = 0;
 
@@ -63,10 +64,19 @@ int main(int argc, char **argv)
 	sleep(2);
 	setStatus(TSTATE_ONLINE | TSTATE_SEEK);
 	usleep(500000);
+	sleep(1);
+	setStatus(TSTATE_ONLINE | TSTATE_BACKWARDS | TSTATE_SEEK | TSTATE_DRIVE1);
+	sleep(2);
+	setStatus(TSTATE_ONLINE | TSTATE_SEEK | TSTATE_DRIVE1);
+	usleep(500000);
 	for (int i = 1; i < 10; i++) {
 		setStatus(TSTATE_ONLINE);
-		usleep(250000);
-		setStatus(TSTATE_ONLINE | TSTATE_READWRITE);
+		usleep(500000);
+		setStatus(TSTATE_ONLINE | TSTATE_READ);
+		sleep(3);
+		setStatus(TSTATE_ONLINE | TSTATE_DRIVE1);
+		usleep(500000);
+		setStatus(TSTATE_ONLINE | TSTATE_WRITE | TSTATE_DRIVE1);
 		sleep(3);
 	}
 	setStatus(0);
