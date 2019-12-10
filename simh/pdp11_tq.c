@@ -270,11 +270,10 @@ int32 tq_xtime = 500;                                   /* transfer time */
 int32 tq_rwtime = 2000000;                              /* rewind time 2 sec (adjusted later) */
 int32 tq_typ = INIT_TYPE;                               /* device type */
 
-/* transfer time for realistic timing in usec */
-/* Used if >5000 microseconds. This value is modified at various places */
-/* in the driver, if not set to 0 initially */
+/* variables for timed operations */
 
-int32 tq_xrtime = 2000000;
+int32 tq_savpkt;
+int32 tq_savedpos;
 
 /* Command table - legal modifiers (low 16b) and flags (high 16b) */
 
@@ -763,23 +762,21 @@ if ((pkt == 0) && tq_pip) {                             /* polling? */
                     tq_pkt[pkt].d[CMD_MOD], tq_pkt[pkt].d[CMD_UN],
                     tq_pkt[pkt].d[RW_BCH], tq_pkt[pkt].d[RW_BCL],
                     tq_pkt[pkt].d[RW_BAH], tq_pkt[pkt].d[RW_BAL]);
-
-	switch (tq_pkt[pkt].d[CMD_OPC]) { // realistic timing
+	tq_savpkt = pkt;
+	if (up) {
+	    sim_debug (DBG_REQ, &tq_dev, "current position=%d\n",up->pos);
+	    tq_savedpos = up->pos;
+        }
+	switch (tq_pkt[pkt].d[CMD_OPC]) { // status byte, not yet implemented
 	    case OP_POS:	// POSITION
-				if (tq_xrtime>5000) tq_xrtime = 5000000;
-				if (up) {
-				    sim_debug (DBG_REQ, &tq_dev, "current position=%d\n",up->pos);
-				}
 				break;
 	    case OP_RD:
 	    case OP_WR:
 	    case OP_CMP:	// READ,WRITE,COMPARE
-				if (tq_xrtime>5000) tq_xrtime = 2000000;
 				break;
 	    case OP_WTM:  	// WRITE TAPE MARK
-				if (tq_xrtime>5000) tq_xrtime = 500000;
 				break;
-	    default:		if (tq_xrtime>5000) tq_xrtime = 100000;
+	    default:		
 				break;
 	}
 
@@ -1314,17 +1311,26 @@ return ST_SUC;                                          /* success! */
 
 void tq_io_complete (UNIT *uptr, t_stat status)
 {
-struct tq_req_results *res = (struct tq_req_results *)uptr->results;
+   int32 ttime;
+   struct tq_req_results *res = (struct tq_req_results *)uptr->results;
 
-sim_debug(DBG_TRC, &tq_dev, "tq_io_complete(status=%d)\n", status);
+   sim_debug(DBG_TRC, &tq_dev, "tq_io_complete(status=%d)\n", status);
 
-res->io_status = status;
-res->io_complete = 1;
+  res->io_status = status;
+  res->io_complete = 1;
+
 /* Reschedule for the appropriate delay */
-if (tq_xrtime <=5000)
-	sim_activate_notbefore (uptr, uptr->iostarttime+tq_xtime);
-else
-	sim_activate_after_abs (uptr, tq_xrtime);
+  UNIT *up = tq_getucb (tq_pkt[tq_savpkt].d[CMD_UN]);
+  if (up) {
+    ttime = 200 * (up->pos - tq_savedpos);
+    if (ttime < 0) ttime = -ttime;
+    sim_debug (DBG_REQ, &tq_dev, "simulated execution time = %d msec\n",ttime / 1000);
+  }
+   else
+    ttime = 100000;
+  if (ttime < 100000) ttime = 100000;
+  else if (ttime > 20000000) ttime = 20000000;
+  sim_activate_after_abs (uptr, ttime);
 }
 
 
