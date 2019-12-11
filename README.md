@@ -1,10 +1,13 @@
-# tu56
+# tu56: DECtape TU 56 front panel emulator
 
 Simulation of a TU 56 DECtape front panel, version 0.2
 
 For the Raspberry Pi and other Linux systems
 
 ![tu56 front panel](front.png?raw=true "tu56 front panel")
+
+This [video of a tu56 demo](https://youtu.be/Ye_s0w6C970) shows the tu56 in action on a PiDP-11 and an
+attached tek4010 terminal emulator.
 
 The TU 56 DECtape had a very fast tape transportation speed for reads and writes of
 81-105 inches per second, and an average rotation speed of the reels of 500 rpm.
@@ -50,7 +53,7 @@ Then start the demo program with
  ./demo
  
 There is currently no 2 way communication back from the panel to the "host". Therefore, at the moment the demo
-just flips the left buttons in the write enable position if required. But the the right buttons needs
+just flips the left button to the write enable position if required. But the the right buttons need
 to be in the remote position. Otherwise the panel does not listen to a "host".
 
 If you abort the demo program while it's running you might end up with reels spinning forever. Just use
@@ -68,7 +71,7 @@ realistic. I would be very interested in a more realistic demo.
 First, install the modified TQ driver in SimH as follows. It's a good idea to make a backup copy of /opt/pidp11
 before doing that, in case something goes wrong.
 
- cdtu
+ cd
  cd tu56/simh
  ./putsource
 
@@ -80,12 +83,14 @@ You have to restart simh after installing the new driver. The easiest way to do 
 Raspberry Pi.
 
 Also, don't forget to enable the TQ driver in your boot.ini, see
-[Using the historical Unix 2.11 BSD operating system on the PiDP-11](https://github.com/rricharz/pidp11-2.11bsd.git)
+[Using the historical Unix 2.11 BSD operating system on the PiDP-11](https://github.com/rricharz/pidp11-2.11bsd.git).
+You have to restart 2.11 BSD after changing boot.ini.
 
 Now you are ready to use the tu56 front panel with the PiDP-11. Just start the front panel at any time. It does
 not matter whether this is done before or after SimH and BSD are started. The only thing which is important is that
 the right switch on the left drive on the tu56 front panel is set to the "REMOTE" position. Boot to 2.11 BSD, and
-use commands like "tar cv filename" or "tar xv filename" to see the tape in action. 
+use commands like "tar cv filename" or "tar xv filename" to see the tape in action. It is much more fun to use
+"tar" if you can see the tape in action.
 
 **Contributors**
 
