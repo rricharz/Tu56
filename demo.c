@@ -31,7 +31,7 @@
 #define TSTATE_ONLINE		 1		// Turns the online light on
 #define TSTATE_DRIVE1		 2		// Selects drive 0 or 1
 #define TSTATE_BACKWARDS	 4		// Sets the direction
-#define TSTATE_SEEK			 8		// Spins the reels
+#define TSTATE_SEEK		 	 8		// Spins the reels
 #define TSTATE_READ			16		// Spins the reels
 #define TSTATE_WRITE		32		// Turns the write light on and spins the reels
 

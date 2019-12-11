@@ -1,14 +1,19 @@
-# Tu56
+# tu56
 
-Simulation of TU56 DECtape, version 0.1
+Simulation of a TU 56 DECtape front panel, version 0.2
 
 For the Raspberry Pi and other Linux systems
 
-This unfinished version is operational, but supports only offline mode.
-The connection to simh has not yet been implemented.
+![tu56 front panel](front.png?raw=true "tu56 front panel")
 
 The TU 56 DECtape had a very fast tape transportation speed for reads and writes of
 81-105 inches per second, and an average rotation speed of the reels of 500 rpm.
+
+A driver to use tu56 with the PiDP-11 and 2.11 BSD is included. It uses the magtape TQ
+driver, because currently no DECtape driver is available with 2.11 BSD. It also adds
+realistic execution times to the TQ driver. For details
+on how to use TQ tapes on SimH on the PiDP-11 with 2.11 BSD see
+[Using the historical Unix 2.11 BSD operating system on the PiDP-11](https://github.com/rricharz/pidp11-2.11bsd.git) 
 
 Start the program with
 
@@ -44,8 +49,7 @@ Then start the demo program with
 
  ./demo
  
-There is currently no 2 way communication back from the panel to the "host", because I'm not yet sure
-whether I can implement that in a simh DECtape or magtape driver. Therefore, at the moment the demo
+There is currently no 2 way communication back from the panel to the "host". Therefore, at the moment the demo
 just flips the left buttons in the write enable position if required. But the the right buttons needs
 to be in the remote position. Otherwise the panel does not listen to a "host".
 
@@ -58,6 +62,30 @@ approx. 35 seconds.
 
 "test.c" is easy to understand. If you have a real TU 56 you might want to modify it a bit to make it more
 realistic. I would be very interested in a more realistic demo.
+
+**Using tu56 with SimH on the PiDP-11, running 2.11 BSD**
+
+First, install the modified TQ driver in SimH as follows. It's a good idea to make a backup copy of /opt/pidp11
+before doing that, in case something goes wrong.
+
+ cdtu
+ cd tu56/simh
+ ./putsource
+
+Building a new version of SimH will take a while. There is also a copy of the original pdp11_tq.c there if you
+want to go back to the original driver. The new TQ driver adds realistic timing and generates a status byte in
+/tmp/tu56status, which can be used by tu56.
+
+You have to restart simh after installing the new driver. The easiest way to do this is to restart your
+Raspberry Pi.
+
+Also, don't forget to enable the TQ driver in your boot.ini, see
+[Using the historical Unix 2.11 BSD operating system on the PiDP-11](https://github.com/rricharz/pidp11-2.11bsd.git)
+
+Now you are ready to use the tu56 front panel with the PiDP-11. Just start the front panel at any time. It does
+not matter whether this is done before or after SimH and BSD are started. The only thing which is important is that
+the right switch on the left drive on the tu56 front panel is set to the "REMOTE" position. Boot to 2.11 BSD, and
+use commands like "tar cv filename" or "tar xv filename" to see the tape in action. 
 
 **Contributors**
 

@@ -25,8 +25,6 @@
 
    tq           TQK50 tape controller
 
-   10-Nov-19	RR	Realistic tape timing and status byte added
-
    23-Oct-13    RMS     Revised for new boot setup routine
    23-Jan-12    MP      Added missing support for Logical EOT detection while
                         positioning.
@@ -257,8 +255,8 @@ uint32 tq_pip = 0;                                      /* poll in progress */
 struct uq_ring tq_cq = { 0 };                           /* cmd ring */
 struct uq_ring tq_rq = { 0 };                           /* rsp ring */
 struct tqpkt tq_pkt[TQ_NPKTS];                          /* packet queue */
-uint16 tq_freq = 0;                                     /* free list */
-uint16 tq_rspq = 0;                                     /* resp list */
+uint16 tq_freq = 0;                                      /* free list */
+uint16 tq_rspq = 0;                                      /* resp list */
 uint32 tq_pbsy = 0;                                     /* #busy pkts */
 uint32 tq_credits = 0;                                  /* credits */
 uint32 tq_hat = 0;                                      /* host timer */
@@ -269,38 +267,6 @@ int32 tq_qtime = 200;                                   /* queue time */
 int32 tq_xtime = 500;                                   /* transfer time */
 int32 tq_rwtime = 2000000;                              /* rewind time 2 sec (adjusted later) */
 int32 tq_typ = INIT_TYPE;                               /* device type */
-
-/* constants, variables and functions for timed operations and status bytes file */
-
-#define TSTATE_ONLINE		 1		// Turns the online light on
-#define TSTATE_DRIVE1		 2		// Selects drive 0 or 1
-#define TSTATE_BACKWARDS	 4		// Sets the direction
-#define TSTATE_SEEK		     8		// Spins the reels
-#define TSTATE_READ		    16		// Spins the reels
-#define TSTATE_WRITE		32		// Turns the write light on and spins the reels
-
-int32 tq_savpkt;
-int32 tq_savedpos;
-int32 tq_status;
-
-FILE *tq_statusFile = 0;
-
-void tq_setStatus()
-// set the status bits in the status file
-// if status file is accessible
-{	
-	char *fname = "/tmp/tu56status";
-	
-	if (tq_statusFile == 0) {
-		tq_statusFile = fopen(fname, "w");
-	}
-
-	if (tq_statusFile != 0) {
-		fseek(tq_statusFile,0L,SEEK_SET);
-		putc(32 + tq_status,tq_statusFile);
-		fflush(tq_statusFile);
-	}
-}
 
 /* Command table - legal modifiers (low 16b) and flags (high 16b) */
 
@@ -789,23 +755,6 @@ if ((pkt == 0) && tq_pip) {                             /* polling? */
                     tq_pkt[pkt].d[CMD_MOD], tq_pkt[pkt].d[CMD_UN],
                     tq_pkt[pkt].d[RW_BCH], tq_pkt[pkt].d[RW_BCL],
                     tq_pkt[pkt].d[RW_BAH], tq_pkt[pkt].d[RW_BAL]);
-
-// prepare status byte and realistic timing                    
-	tq_savpkt = pkt;
-	if (up) {
-	    tq_savedpos = up->pos;
-        }
-    else
-		tq_savedpos = 0;
-	tq_status = TSTATE_ONLINE;
-	if (tq_pkt[pkt].d[CMD_UN] == 1) tq_status |= TSTATE_DRIVE1;
-	switch (tq_pkt[pkt].d[CMD_OPC]) {
-	    case OP_POS: tq_status |= TSTATE_SEEK; break;
-	    case OP_RD:  tq_status |= TSTATE_READ; break;  
-	    case OP_WR:  tq_status |= TSTATE_WRITE; break;
-	    case OP_CMP: tq_status |= TSTATE_READ; break;
-	    case OP_WTM: tq_status |= TSTATE_WRITE; break;
-	}
 
         if (GETP (pkt, UQ_HCTC, TYP) != UQ_TYP_SEQ)     /* seq packet? */
             return tq_fatal (PE_PIE);                   /* no, term thread */
@@ -1338,31 +1287,14 @@ return ST_SUC;                                          /* success! */
 
 void tq_io_complete (UNIT *uptr, t_stat status)
 {
-	int32 ttime;
-	struct tq_req_results *res = (struct tq_req_results *)uptr->results;
+struct tq_req_results *res = (struct tq_req_results *)uptr->results;
 
-	sim_debug(DBG_TRC, &tq_dev, "tq_io_complete(status=%d)\n", status);
+sim_debug(DBG_TRC, &tq_dev, "tq_io_complete(status=%d)\n", status);
 
-	res->io_status = status;
-	res->io_complete = 1;
-
-	/* Reschedule for the appropriate delay */
-	UNIT *up = tq_getucb (tq_pkt[tq_savpkt].d[CMD_UN]);
-	if (up) {
-		ttime = 100 * (up->pos - tq_savedpos);
-		if (ttime < 0) {
-			ttime = -ttime;
-			tq_status |= TSTATE_BACKWARDS;
-		}
-		ttime += 200000;
-		// sim_debug (DBG_REQ, &tq_dev, "simulated execution time = %d msec\n",ttime / 1000);
-	}
-	else
-		ttime = 200000;
-    if (ttime > 20000000) ttime = 20000000;
-    if (up) tq_setStatus();
-    // sim_activate_notbefore (uptr, uptr->iostarttime+tq_xtime);
-    sim_activate_after_abs (uptr, ttime);
+res->io_status = status;
+res->io_complete = 1;
+/* Reschedule for the appropriate delay */
+sim_activate_notbefore (uptr, uptr->iostarttime+tq_xtime);
 }
 
 
@@ -1897,12 +1829,6 @@ if (up)
 else
     sim_debug (DBG_REQ, &tq_dev, "rsp=%04X, sts=%04X\n", 
                                tq_pkt[pkt].d[RSP_OPF], tq_pkt[pkt].d[RSP_STS]);
-
-if (up) {
-	tq_status &= ~(TSTATE_BACKWARDS | TSTATE_READ | TSTATE_SEEK | TSTATE_WRITE);
-	tq_setStatus();
-}
-
 if (!tq_getdesc (&tq_rq, &desc))                        /* get rsp desc */
     return ERR;
 if ((desc & UQ_DESC_OWN) == 0) {                        /* not valid? */

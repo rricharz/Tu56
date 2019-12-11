@@ -28,8 +28,8 @@
 #define TSTATE_ONLINE		 1
 #define TSTATE_DRIVE1		 2
 #define TSTATE_BACKWARDS	 4
-#define TSTATE_SEEK			 8
-#define TSTATE_READ			16
+#define TSTATE_SEEK		 8
+#define TSTATE_READ		16
 #define TSTATE_WRITE		32
 
 #define GDK_DISABLE_DEPRECATION_WARNINGS
@@ -67,6 +67,7 @@ struct {
   int reelAindex, reelCindex;
   double scale;
   int remote_status, last_remote_status;
+  int direction_change_countdown;
 } glob;
 
 int getStatus()
@@ -193,6 +194,11 @@ static void do_logic()
 		glob.remote_status = getStatus();
 		if (glob.last_remote_status != glob.remote_status)
 			printf("remote state = 0x%02x\n", glob.remote_status);
+			if ((glob.last_remote_status & TSTATE_BACKWARDS) != (glob.remote_status & TSTATE_BACKWARDS)) {
+				// tape direction has changed, insert a delay
+				printf("tape direction change\n");
+				glob.direction_change_countdown = 20;
+			}
 		
 		// set the lights and motors
 		// for now it also flips the write enable button if necessary
@@ -210,6 +216,10 @@ static void do_logic()
 			glob.light[1] = (glob.remote_status & TSTATE_ONLINE);
 			glob.tape1    = (glob.remote_status & (TSTATE_READ | TSTATE_WRITE | TSTATE_SEEK));
 		}
+		if (glob.direction_change_countdown > 0) {
+			glob.tape1 = 0;
+			glob.tape2 = 0;
+		}
 		
 	}
 	else
@@ -219,6 +229,8 @@ static void do_logic()
 
 static gboolean on_timer_event(GtkWidget *widget)
 {
+	if (glob.direction_change_countdown > 0)
+		glob.direction_change_countdown--;
 	do_logic();	
 	if (glob.tape1 || glob.tape2 || (glob.last_remote_status != glob.remote_status))
 		gtk_widget_queue_draw(widget);
@@ -325,7 +337,7 @@ int main(int argc, char *argv[])
   int argFullscreen = 0;
   int firstArg = 1;
   
-  printf("tu56 version 0.1\n");
+  printf("tu56 version 0.2\n");
   
   while (firstArg < argc) {
 	if (strcmp(argv[firstArg],"-full") == 0)
@@ -375,6 +387,7 @@ int main(int argc, char *argv[])
   
   glob.last_remote_status = 0;
   glob.last_remote_status = 0;
+  glob.direction_change_countdown = 0;
 
   gtk_init(&argc, &argv);
 
