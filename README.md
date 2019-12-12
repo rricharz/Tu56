@@ -142,7 +142,7 @@ You can write multiple files with one "tar" command, see "man tar". One "tar" co
 produces one record on tape. But if you read back individual files from such a tape
 with multiple "tar" commands, "tar" executes a rewind between each call to tar.
 
-Fortunately you can also write multiple records with multiple "tar" commands, You need to use
+Fortunately you can also write multiple records with multiple "tar" commands. You need to use
 the devices /dev/nrmt0 or /dev/nrmt1 to tell "tar" not to rewind the tape each time.
 
 To write 2 separate records:
@@ -166,7 +166,7 @@ You can now read back both files individually, without rewinding the tape betwee
 
 See "man mt" for all possible options.
 
-**Using DECtape with DEC operation systems
+**Using DECtape with DEC operation systems**
 
 Not yet implemented
 
