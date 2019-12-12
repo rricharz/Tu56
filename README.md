@@ -20,9 +20,10 @@ on how to use TQ tapes on SimH on the PiDP-11 with 2.11 BSD see
 
 Start the program with
 
- ./tu56			    for a 960x464 decorated window
- 
- ./tu56 -full		for a full screen window, scaled to your display size
+```
+  ./tu56		for a 960x464 decorated window 
+  ./tu56 -full	for a full screen window, scaled to your display size
+```
 
 All switches and lights are funktional. Click either in the upper or lower half of a switch.
 
@@ -45,12 +46,16 @@ a test for the communication between a simulated "host" (the demo program in thi
 
 Start tu56 in background (with the &) using
 
- ./tu56 &
+```
+  ./tu56 &
+```
  
 Make sure that both right switches are in the "remote" position (this is the default).
 Then start the demo program with
 
- sudo ./demo
+```
+  sudo ./demo
+```
  
 Sudo might be required if SimH has written to the status byte file before. There is currently no 2 way communication back from the panel to the "host". Therefore, at the moment the demo
 just flips the left button to the write enable position if required. But the the right buttons need
@@ -71,13 +76,13 @@ realistic. I would be very interested in a more realistic demo.
 First, install the modified TQ driver in SimH as follows. It's a good idea to make a backup copy of /opt/pidp11
 before doing that, in case something goes wrong.
 
- cd
- 
- cd tu56/simh
+```
+  cd 
+  cd tu56/simh
+  ./putsource
+```
 
- ./putsource
-
-Building a new version of SimH will take a while. There is also a copy of the original pdp11_tq.c there if you
+Building a new version of SimH with putsource will take a while. There is also a copy of the original pdp11_tq.c there if you
 want to go back to the original driver. The new TQ driver adds realistic timing and generates a status byte in
 /tmp/tu56status, which can be used by tu56.
 
@@ -94,11 +99,61 @@ the right switch on the left drive on the tu56 front panel is set to the "REMOTE
 use commands like "tar cv filename" or "tar xv filename" to see the tape in action. It is much more fun to use
 "tar" if you can see the tape in action.
 
+**Talking to both tape drives**
+
+Put the following in your BSD boot.ini:
+
+```
+  set tq enabled
+  attach tq0 /home/pi/bsdtapes/tq0tape.tap
+  attach tq1 /home/pi/bsdtapes/tq1tape.tap
+```
+
+Now you can use tar to write to drive 0 and drive 1. The default is drive 0.
+
+```
+  tar cvf /dev/rmt0 filename
+  tar cvf /dev/rmt1 filename
+```
+
+**Writing and reading multiple records on one tape**
+
+You can write multiple files with one "tar" command, see "man tar". One "tar" command
+produces one record on tape. But if you read back individual files from such a tape
+with multiple "tar" commands, "tar" executes a rewind between each call to tar.
+
+Fortunately you can also write multiple records with multiple "tar" commands, You need to use
+the devices /dev/nrmt0 or /dev/nrmt1 to tell "tar" not to rewind the tape each time.
+
+To write 2 separate records:
+
+```
+  mt -f /dev/nrmt0 rewind
+  tar cvf /dev/nrmt0 filename1
+  tar cvf /dev/nrmt0 filename2
+```
+
+You can now read back both files individually, without rewinding the tape between the operations
+
+```
+  mt -f /dev/nrmt0 rewind
+  tar xvf /dev/nrmt0
+  (do watever you want to do with file 1)
+  mt -f fsr 1
+  tar xvf /dev/nrmt0
+  (do watever you want to do with file 2)
+```
+
+See "man mt" for all possible options.
+
+
 **Contributors**
 
 The pictures used to make the animated screen have been provided by David Gesswein
 [Online PDP-8 Home Page](https://www.pdp8.net/tu56/tu56.shtml) and Henk Gooijen. Jon Brase
-had the idea to use rotational motion blurring for the rotating tape reels.
+had the idea to use rotational motion blurring for the rotating tape reels. Johnny Bilquist
+has helped me to understand many important details of DECtapes and magtapes and how they are
+used on the PDP-11.
 
 
 **The usual disclaimer**
