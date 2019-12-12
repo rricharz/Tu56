@@ -63,7 +63,9 @@ to be in the remote position. Otherwise the panel does not listen to a "host".
 
 If you abort the demo program while it's running you might end up with reels spinning forever. Just use
 
+```
  sudo rm /tmp/tu56status
+```
  
 in this case, or start the demo program again and let it go through the complete demo taking
 approx. 35 seconds.
@@ -99,7 +101,11 @@ the right switch on the left drive on the tu56 front panel is set to the "REMOTE
 use commands like "tar cv filename" or "tar xv filename" to see the tape in action. It is much more fun to use
 "tar" if you can see the tape in action.
 
-**Talking to both tape drives**
+Note: on early Unix systems like System 6 it was possible to use the DECtape drives using the
+"tp" command, with arguments very similar to "tar", but using the DECtape driver. Because there is
+no DECtape driver for 2.11 BSD available, we are using the TQ magtape driver to access the tape drive.
+
+**Talking to both tape drives with 2.11 BSD**
 
 Put the following in your BSD boot.ini:
 
@@ -116,7 +122,21 @@ Now you can use tar to write to drive 0 and drive 1. The default is drive 0.
   tar cvf /dev/rmt1 filename
 ```
 
-**Writing and reading multiple records on one tape**
+You can list the tape directory with
+
+```
+  tar tvf /dev/rmt0
+  tar tvf /dev/rmt1
+```
+And you can read back an individual file with
+
+```
+  tar xvf /dev/rmt0 filename filename
+  tar xvf /dev/rmt1 filename filename
+```
+or all files without the file name argument.
+
+**Writing and reading multiple records on one tape using 2.11 BSD**
 
 You can write multiple files with one "tar" command, see "man tar". One "tar" command
 produces one record on tape. But if you read back individual files from such a tape
@@ -145,6 +165,10 @@ You can now read back both files individually, without rewinding the tape betwee
 ```
 
 See "man mt" for all possible options.
+
+**Using DECtape with DEC operation systems
+
+Not yet implemented
 
 
 **Contributors**
