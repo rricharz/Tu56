@@ -115,7 +115,7 @@ Put the following in your BSD boot.ini:
   attach tq1 /home/pi/bsdtapes/tq1tape.tap
 ```
 
-Now you can use tar to write to drive 0 and drive 1. The default is drive 0.
+Now you can use tar to write to drive 0 and drive 1.
 
 ```
   tar cvf /dev/rmt0 filename
@@ -131,40 +131,10 @@ You can list the tape directory with
 And you can read back an individual file with
 
 ```
-  tar xvf /dev/rmt0 filename filename
-  tar xvf /dev/rmt1 filename filename
+  tar xvf /dev/rmt0 filename
+  tar xvf /dev/rmt1 filename
 ```
-or all files without the file name argument.
-
-**Writing and reading multiple records on one tape using 2.11 BSD**
-
-You can write multiple files with one "tar" command, see "man tar". One "tar" command
-produces one record on tape. But if you read back individual files from such a tape
-with multiple "tar" commands, "tar" executes a rewind between each call to tar.
-
-Fortunately you can also write multiple records with multiple "tar" commands. You need to use
-the devices /dev/nrmt0 or /dev/nrmt1 to tell "tar" not to rewind the tape each time.
-
-To write 2 separate records:
-
-```
-  mt -f /dev/nrmt0 rewind
-  tar cvf /dev/nrmt0 filename1
-  tar cvf /dev/nrmt0 filename2
-```
-
-You can now read back both files individually, without rewinding the tape between the operations
-
-```
-  mt -f /dev/nrmt0 rewind
-  tar xvf /dev/nrmt0
-  (do watever you want to do with file 1)
-  mt -f fsr 1
-  tar xvf /dev/nrmt0
-  (do watever you want to do with file 2)
-```
-
-See "man mt" for all possible options.
+or all files without the filename argument.
 
 **Using DECtape with DEC operation systems**
 
