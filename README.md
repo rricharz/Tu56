@@ -12,11 +12,7 @@ attached tek4010 terminal emulator.
 The TU 56 DECtape had a very fast tape transportation speed for reads and writes of
 81-105 inches per second, and an average rotation speed of the reels of 500 rpm.
 
-A driver to use tu56 with the PiDP-11 and 2.11 BSD is included. It uses the magtape TQ
-driver, because currently no DECtape driver is available with 2.11 BSD. It also adds
-realistic execution times to the TQ driver. For details
-on how to use TQ tapes on SimH on the PiDP-11 with 2.11 BSD see
-[Using the historical Unix 2.11 BSD operating system on the PiDP-11](https://github.com/rricharz/pidp11-2.11bsd.git) 
+A driver to use tu56 with the PiDP-11 and PiDP-8 are included.
 
 **Download the program**
 
@@ -204,11 +200,10 @@ Use the PDP-11 DECtape driver:
 ```
 
 Building a new version of SimH with install will take a while, especially on slower Raspberry Pi
-models. The new TC driver adds generates a status byte in
-/tmp/tu56status, which can be used by tu56.
+models. The new TC driver generates a status byte in /tmp/tu56status, which can be used by tu56.
 
 Detailed instructions on how to use it with RSX-11 will be added here as soon as possible.
-The SimH device is tc, and the RSX-11, the drive is DT0:
+The SimH device is tc, and the RSX-11, the drive is DT0: The device needs to be built with SYSGEN.
 
 **Using tu56 on the PiDP-8**
 
