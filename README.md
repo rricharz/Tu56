@@ -147,7 +147,7 @@ use commands like "tar cv filename" or "tar xv filename" to see the tape in acti
 
 Note: on early Unix systems like System 6 it was possible to use the DECtape drives using the
 "tp" command, with arguments very similar to "tar", but using the DECtape driver. Because there is
-no DECtape driver for 2.11 BSD available, we are using the TQ magtape driver to access the tape drive.
+no DECtape driver for 2.11 BSD available, we are using the TQ magtape driver to access the tape drive in 2.11 BSD.
 
 **Talking to both tape drives with 2.11 BSD**
 
@@ -159,7 +159,7 @@ Put the following in your BSD boot.ini:
   attach tq1 /home/pi/bsdtapes/tq1tape.tap
 ```
 
-Now you can use tar to write to drive 0 and drive 1.
+Now you can use tar to write to drive 0 and drive 1. The default is drive 0.
 
 ```
   tar cvf /dev/rmt0 filename
@@ -175,10 +175,11 @@ You can list the tape directory with
 And you can read back an individual file with
 
 ```
-  tar xvf /dev/rmt0 filename
-  tar xvf /dev/rmt1 filename
+  tar xvf /dev/rmt0 filename filename
+  tar xvf /dev/rmt1 filename filename
 ```
-or all files without the filename argument.
+or all files without the file name argument.
+
 
 **Using DECtape with DEC operation systems**
 
