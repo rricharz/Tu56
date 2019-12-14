@@ -1,0 +1,6 @@
+#!/bin/bash
+# install - copy file back to bsd source and compile
+
+sudo cp pdp8_dt.c ~/pidp8i/src/SIMH/PDP8
+cd  ~/pidp8i
+./configure && make && sudo make install

@@ -1,0 +1,7 @@
+#!/bin/bash
+# uninstall - copy file back to simh source and compile
+
+
+sudo cp pdp8_dt.c.original ~/pidp8i/src/SIMH/PDP8/pdp8_dt.c
+cd  ~/pidp8i
+./configure && make && sudo make install
