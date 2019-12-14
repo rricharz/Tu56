@@ -182,8 +182,8 @@ You can list the tape directory with
 And you can read back an individual file with
 
 ```
-  tar xvf /dev/rmt0 filename filename
-  tar xvf /dev/rmt1 filename filename
+  tar xvf /dev/rmt0 filename
+  tar xvf /dev/rmt1 filename
 ```
 or all files without the file name argument.
 
@@ -229,7 +229,8 @@ The pictures used to make the animated screen have been provided by David Gesswe
 [Online PDP-8 Home Page](https://www.pdp8.net/tu56/tu56.shtml) and Henk Gooijen. Jon Brase
 had the idea to use rotational motion blurring for the rotating tape reels. Johnny Bilquist
 has helped me to understand many important details of DECtapes and magtapes and how they are
-used on the PDP-11.
+used on the PDP-11. Neal G. has helped to setup a RSX-11 test system, and Warren Young to
+setup a PDP-8 test system.
 
 
 **The usual disclaimer**
