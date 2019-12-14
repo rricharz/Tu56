@@ -107,6 +107,17 @@ approx. 35 seconds.
 "test.c" is easy to understand. If you have a real TU 56 you might want to modify it a bit to make it more
 realistic. I would be very interested in a more realistic demo.
 
+**Installing the proper driver in SimH**
+
+A slightly modified tape driver needs to be installed in SimH. This driver writes the necessary
+status bits into a little status file, where it can be read by tu56.
+
+There are currently 3 drivers available:
+
+ - a DECtape driver for the PiDP-8
+ - a DECtape driver for the PiDP-11
+ - a magtape driver for the PiDP-11 
+
 **Using tu56 with SimH on the PiDP-11, running 2.11 BSD**
 
 First, install the modified TQ driver in SimH as follows. It's a good idea to make a backup copy of /opt/pidp11
@@ -114,12 +125,12 @@ before doing that, in case something goes wrong.
 
 ```
   cd 
-  cd tu56/simh/pdp11_magtape_driver
+  cd Tu56/simh/pdp11_magtape_driver
   chmod +x install
   ./install
 ```
 
-Building a new version of SimH with putsource will take a while, especially on slower Raspberry Pi
+Building a new version of SimH with install will take a while, especially on slower Raspberry Pi
 models. The new TQ driver adds realistic timing and generates a status byte in
 /tmp/tu56status, which can be used by tu56.
 
@@ -181,10 +192,41 @@ And you can read back an individual file with
 or all files without the file name argument.
 
 
-**Using DECtape with DEC operation systems**
+**Using tu56 on RSX-11**
 
-Not yet implemented
+Use the PDP-11 DECtape driver:
 
+```
+  cd 
+  cd Tu56/simh/pdp11_dectape_driver
+  chmod +x install
+  ./install
+```
+
+Building a new version of SimH with install will take a while, especially on slower Raspberry Pi
+models. The new TC driver adds generates a status byte in
+/tmp/tu56status, which can be used by tu56.
+
+Detailed instructions on how to use it with RSX-11 will be added here as soon as possible.
+The SimH device is tc, and the RSX-11, the drive is DT0:
+
+**Using tu56 on the PiDP-8**
+
+Use the PDP-8 DECtape driver:
+
+```
+  cd 
+  cd Tu56/simh/pdp8_dectape_driver
+  chmod +x install
+  ./install
+```
+
+Building a new version of SimH with install will take a while, especially on slower Raspberry Pi
+models. The new DT driver adds generates a status byte in
+/tmp/tu56status, which can be used by tu56.
+
+Detailed instructions on how to use it will be added here as soon as possible.
+The SimH device is dt, and the drive is DT0.
 
 **Contributors**
 
