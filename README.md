@@ -18,10 +18,44 @@ realistic execution times to the TQ driver. For details
 on how to use TQ tapes on SimH on the PiDP-11 with 2.11 BSD see
 [Using the historical Unix 2.11 BSD operating system on the PiDP-11](https://github.com/rricharz/pidp11-2.11bsd.git) 
 
+**Download the program**
+
+I recommend using "git clone" to download the program. This allows for very easy upgrades.
+
+```
+  sudo apt-get update
+  sudo apt-get upgrade
+  sudo apt-get install git
+  cd
+  git clone --depth 1 git://github.com/rricharz/Tu56
+  cd Tu56
+```
+
+To upgrade the program later, type
+
+```
+  cd
+  cd Tu56
+  git pull
+```
+
+If you want to recompile the program, proceed as follows
+
+```
+  cd
+  cd Tu56
+  sudo apt-get install libgtk-3-dev
+  touch tu56.c
+  make
+```
+
 Start the program with
 
 ```
-  ./tu56		for a 960x464 decorated window 
+  cd
+  cd Tu56
+  
+  ./tu56	for a 960x464 decorated window 
   ./tu56 -full	for a full screen window, scaled to your display size
 ```
 
@@ -80,13 +114,23 @@ before doing that, in case something goes wrong.
 
 ```
   cd 
-  cd tu56/simh
-  ./putsource
+  cd tu56/simh/pdp11_magtape_driver
+  chmod +x install
+  ./install
 ```
 
-Building a new version of SimH with putsource will take a while. There is also a copy of the original pdp11_tq.c there if you
-want to go back to the original driver. The new TQ driver adds realistic timing and generates a status byte in
+Building a new version of SimH with putsource will take a while, especially on slower Raspberry Pi
+models. The new TQ driver adds realistic timing and generates a status byte in
 /tmp/tu56status, which can be used by tu56.
+
+If you want to go back to the original driver, type
+
+```
+  cd 
+  cd tu56/simh/pdp11_magtape_driver
+  chmod +x uninstall
+  ./uninstall
+```
 
 You have to restart simh after installing the new driver. The easiest way to do this is to restart your
 Raspberry Pi.

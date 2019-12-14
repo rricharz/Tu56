@@ -1,0 +1,6 @@
+#!/bin/bash
+# uninstall - copy file back to bsd source and compile
+
+sudo cp pdp11_tq.c.original /opt/pidp11/src/02.3_simh/4.x+realcons/src/PDP11/pdp11_tq.c
+cd /opt/pidp11/src/
+./makeclient.sh
