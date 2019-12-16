@@ -318,6 +318,7 @@ static gboolean on_button_click_event(GtkWidget *widget, GdkEventButton *event, 
 
 static void on_quit_event()
 {
+	system("pkill mpg321");
 	gtk_main_quit();
     exit(0);
 }
