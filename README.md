@@ -1,8 +1,10 @@
 # tu56: DECtape TU 56 front panel emulator
 
-Simulation of a TU 56 DECtape front panel, version 0.2
+Simulation of a TU 56 DECtape front panel, version 0.3
 
-For the Raspberry Pi and other Linux systems
+For the Raspberry Pi and other Linux systems.
+
+New in version 0.3: Audio support on the HDMI screen for switches and reel motions, see below.
 
 ![tu56 front panel](front.png?raw=true "tu56 front panel")
 
@@ -102,6 +104,38 @@ approx. 35 seconds.
 
 "test.c" is easy to understand. If you have a real TU 56 you might want to modify it a bit to make it more
 realistic. I would be very interested in a more realistic demo.
+
+**Turning on realistic sounds**
+
+I recommend using a Raspberry Pi 4 to achieve an optimal synchronization between the audio and video
+streams.
+
+Install "mpg321" using
+
+```
+ sudo apt-get update
+ sudo apt-get upgrade
+ sudo apt-get install mpg321
+```
+
+Test audio as follows
+
+```
+ cd
+ cd Tu56
+ mpg321 sound/switch.mp3
+```
+
+Run "tu56" as follows:
+
+```
+ cd
+ cd Tu56
+ tu56 -audio
+```
+
+"tu56" will only find the necessary sound files if Tu56 is the current directory.
+
 
 **Installing the proper driver in SimH**
 

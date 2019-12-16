@@ -38,7 +38,7 @@
 #include <math.h>
 #include <gtk/gtk.h>
 
-#define TIME_INTERVAL    40		// timer interval in msec
+#define TIME_INTERVAL    100		// timer interval in msec
 
 #define REELAX			 52
 #define REELAY			524
@@ -66,8 +66,9 @@ struct {
   long counter;
   int reelAindex, reelCindex;
   double scale;
-  int remote_status, last_remote_status;
+  int remote_status, last_remote_status, reelsound;
   int direction_change_countdown;
+  int argFullscreen, argAudio;
 } glob;
 
 int getStatus()
@@ -174,7 +175,13 @@ static void do_drawing(cairo_t *cr)
 	for (int i = 0; i < 6; i++) {	
 		cairo_set_source_surface(cr, glob.button[glob.buttonstate[i]], buttonx[i], buttony[i]);
 		cairo_paint(cr);
-	}  
+	}
+	
+	if (((glob.tape1 == 0) && (glob.tape2 == 0)) && (glob.reelsound != 0)) {
+			glob.reelsound = 0;
+			// printf("turn reel sound off , tape1=%d, tape2=%d\n", glob.tape1, glob.tape2);
+			if (glob.argAudio) system("pkill mpg321");
+		}	 
 }
 
 static void do_logic()
@@ -220,11 +227,15 @@ static void do_logic()
 			glob.tape1 = 0;
 			glob.tape2 = 0;
 		}
-		
 	}
 	else
 		glob.remote_status = 0;
 	
+	if (((glob.tape1 != 0) || (glob.tape2 != 0)) && (glob.reelsound == 0)) {
+			glob.reelsound = 1;
+			// printf("turn reel sound on , tape1=%d, tape2=%d\n", glob.tape1, glob.tape2);
+			if (glob.argAudio) system("/usr/bin/mpg321 -q -l 0 sound/reels.mp3 2> /dev/null &");
+		}
 }
 
 static gboolean on_timer_event(GtkWidget *widget)
@@ -249,6 +260,7 @@ static gboolean on_button_release_event(GtkWidget *widget, GdkEventButton *event
 			(y >= buttony[1]) && (y <= buttony[1] + BUTTONYSIZE)) {
 				glob.buttonstate[1] = 0;
 				do_logic();
+				if (glob.argAudio) system("/usr/bin/mpg321 -q sound/switch.mp3 2> /dev/null &");
 				gtk_widget_queue_draw(widget);
 				return TRUE;
 		}
@@ -256,6 +268,7 @@ static gboolean on_button_release_event(GtkWidget *widget, GdkEventButton *event
 			(y >= buttony[4]) && (y <= buttony[4] + BUTTONYSIZE)) {
 				glob.buttonstate[4] = 0;
 				do_logic();
+				if (glob.argAudio) system("/usr/bin/mpg321 -q sound/switch.mp3 2> /dev/null &");
 				gtk_widget_queue_draw(widget);
 				return TRUE;
 		}
@@ -275,6 +288,7 @@ static gboolean on_button_click_event(GtkWidget *widget, GdkEventButton *event, 
 				(y >= buttony[i]) && (y <= buttony[i] + BUTTONYSIZE)) {
 					
 				if (y <= buttony[i] + (BUTTONYSIZE / 2)) {
+					if (glob.argAudio) system("/usr/bin/mpg321 -q sound/switch.mp3 2> /dev/null &");
 					if ((i == 0) || (i == 3))	// 2 state buttons
 						glob.buttonstate[i] = 1;
 					else if (glob.buttonstate[i] != 0)  // 3 state button
@@ -284,6 +298,7 @@ static gboolean on_button_click_event(GtkWidget *widget, GdkEventButton *event, 
 						
 				}
 				else {
+					if (glob.argAudio) system("/usr/bin/mpg321 -q sound/switch.mp3 2> /dev/null &");
 					if ((i == 0) || (i == 3))	// 2 state buttons
 					glob.buttonstate[i] = 2;
 					else if (glob.buttonstate[i] != 0)  // 3 state button
@@ -334,14 +349,17 @@ int main(int argc, char *argv[])
   GtkWidget *window;
   GtkWidget *darea;
   
-  int argFullscreen = 0;
+  glob.argFullscreen = 0;
+  glob.argAudio = 0;
   int firstArg = 1;
   
-  printf("tu56 version 0.2\n");
+  printf("tu56 version 0.3\n");
   
   while (firstArg < argc) {
 	if (strcmp(argv[firstArg],"-full") == 0)
-		argFullscreen = 1;                
+		glob.argFullscreen = 1;
+	if (strcmp(argv[firstArg],"-audio") == 0)
+		glob.argAudio = 1;            
     else {
         printf("tu56: unknown argument %s\n", argv[firstArg]);
         exit(1);
@@ -388,6 +406,7 @@ int main(int argc, char *argv[])
   glob.last_remote_status = 0;
   glob.last_remote_status = 0;
   glob.direction_change_countdown = 0;
+  glob.reelsound = 0;
 
   gtk_init(&argc, &argv);
 
@@ -415,7 +434,7 @@ int main(int argc, char *argv[])
   int screenHeight = gdk_screen_get_height(screen);
   printf("Screen dimensions: %d x %d\n", screenWidth, screenHeight);
         
-  if (argFullscreen) {        
+  if (glob.argFullscreen) {        
     // DISPLAY UNDECORATED FULL SCREEN WINDOW
 	gtk_window_set_decorated(GTK_WINDOW(window), FALSE);
 	gtk_window_fullscreen(GTK_WINDOW(window));
