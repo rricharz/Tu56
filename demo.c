@@ -26,6 +26,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 #define TSTATE_ONLINE		 1		// Turns the online light on
@@ -57,7 +58,7 @@ void setStatus(int status)
 
 int main(int argc, char **argv)
 {	
-
+	system("pkill mpg321");
 	setStatus(0);
 	sleep(1);
 	setStatus(TSTATE_ONLINE | TSTATE_BACKWARDS | TSTATE_SEEK);
