@@ -234,7 +234,7 @@ static void do_logic()
 	if (((glob.tape1 != 0) || (glob.tape2 != 0)) && (glob.reelsound == 0)) {
 			glob.reelsound = 1;
 			// printf("turn reel sound on , tape1=%d, tape2=%d\n", glob.tape1, glob.tape2);
-			if (glob.argAudio) system("/usr/bin/mpg321 -q sound/reels.mp3 2> /dev/null &");
+			if (glob.argAudio) system("/usr/bin/mpg321 -q -l 4 sound/reels.mp3 2> /dev/null &");
 		}
 }
 
