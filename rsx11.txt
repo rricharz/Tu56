@@ -1,0 +1,45 @@
+Using tu56 on RSX-11
+********************
+
+Use the PDP-11 DECtape driver:
+
+  cd 
+  cd Tu56/simh/pdp11_dectape_driver
+  chmod +x install
+  ./install
+
+Building a new version of SimH with install will take a while, especially on slower
+Raspberry Pi models. The new TC driver generates a status byte in /tmp/tu56status,
+which can be used by tu56.
+
+Unfortunately the standard RSX-11 disk on the PiDP-11 distribution software does not
+have the DECtape driver enabled. The disk and instructions below have been provided
+by Neal G.
+
+First, I recommend to make a backup copy of your current /opt/pidp11/systems/rsx11mplus
+directory.
+
+Then, copy the disk and boot.ini file provided in the rsx11 directory of this repo to
+/opt/pidp11/systems/rsx11mplus
+
+  cd
+  cd Tu56/rsx11
+  sudo cp rsx11m102.tgz /opt/pidp11/systems/rsx11mplus
+  sudo cp boot.ini /opt/pidp11/systems/rsx11mplus
+  cd /opt/pidp11/systems/rsx11mplus
+  sudo tar xvf rsx11m102.tgz
+
+You have now a bootable an image of a bootable disk and a DECtape in your rsx11mplus
+directory.
+
+Boot up to RSX11mplus as usual. Then mount the DECtape
+
+  ctrl-e
+  simh> attach tc0 test2-tu56.tap
+  simh> cont
+
+  $ mount dt0: test02
+  $ dir dt0: /free
+
+
+  

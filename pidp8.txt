@@ -1,0 +1,22 @@
+Using tu56 on the PiDP-8
+************************
+
+Use the PDP-8 DECtape driver:
+
+  cd 
+  cd Tu56/simh/pdp8_dectape_driver
+  chmod +x install
+  ./install
+
+Building a new version of SimH with install will take a while, especially on slower Raspberry Pi
+models. The new DT driver adds generates a status byte in
+/tmp/tu56status, which can be used by tu56.
+
+Instructions for using DECtape provided by Warren Young:
+
+  ctrl-e
+  Simulation stopped, PC: 01210 (JMP 1207)
+  sim> att dt media/os8/al-4691c-sa-os8-v3d-1.1978.tu56
+  DT0: 12b format, buffering file in memory
+  sim> c
+  DIR DTA0:

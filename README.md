@@ -146,116 +146,17 @@ There are currently 3 drivers available:
 
  - a DECtape driver for the PiDP-8
  - a DECtape driver for the PiDP-11
- - a magtape driver for the PiDP-11 
+ - a magtape driver for the PiDP-11
 
-**Using tu56 with SimH on the PiDP-11, running 2.11 BSD**
+**Instructions for different operating systems**
 
-First, install the modified TQ driver in SimH as follows. It's a good idea to make a backup copy of /opt/pidp11
-before doing that, in case something goes wrong.
+ - [Using tu56 with 2.11 BSD on the PiDP-11](bsd.txt)
+ - [Using tu56 with RSX-11 on the PiDP-11](rsx11.txt)
+ - [Using tu56 on the PiDP-8](pidp8.txt)
 
-```
-  cd 
-  cd Tu56/simh/pdp11_magtape_driver
-  chmod +x install
-  ./install
-```
+Improved instructions are very much appreciated. Please send improved versions of these
+instructions, and instructions for other operating systems to rricharz77@gmail.com
 
-Building a new version of SimH with install will take a while, especially on slower Raspberry Pi
-models. The new TQ driver adds realistic timing and generates a status byte in
-/tmp/tu56status, which can be used by tu56.
-
-If you want to go back to the original driver, type
-
-```
-  cd 
-  cd tu56/simh/pdp11_magtape_driver
-  chmod +x uninstall
-  ./uninstall
-```
-
-You have to restart simh after installing the new driver. The easiest way to do this is to restart your
-Raspberry Pi.
-
-Also, don't forget to enable the TQ driver in your boot.ini, see
-[Using the historical Unix 2.11 BSD operating system on the PiDP-11](https://github.com/rricharz/pidp11-2.11bsd.git).
-You have to restart 2.11 BSD after changing boot.ini.
-
-Now you are ready to use the tu56 front panel with the PiDP-11. Just start the front panel at any time. It does
-not matter whether this is done before or after SimH and BSD are started. The only thing which is important is that
-the right switch on the left drive on the tu56 front panel is set to the "REMOTE" position. Boot to 2.11 BSD, and
-use commands like "tar cv filename" or "tar xv filename" to see the tape in action. It is much more fun to use
-"tar" if you can see the tape in action.
-
-Note: on early Unix systems like System 6 it was possible to use the DECtape drives using the
-"tp" command, with arguments very similar to "tar", but using the DECtape driver. Because there is
-no DECtape driver for 2.11 BSD available, we are using the TQ magtape driver to access the tape drive in 2.11 BSD.
-
-**Talking to both tape drives with 2.11 BSD**
-
-Put the following in your BSD boot.ini:
-
-```
-  set tq enabled
-  attach tq0 /home/pi/bsdtapes/tq0tape.tap
-  attach tq1 /home/pi/bsdtapes/tq1tape.tap
-```
-
-Now you can use tar to write to drive 0 and drive 1. The default is drive 0.
-
-```
-  tar cvf /dev/rmt0 filename
-  tar cvf /dev/rmt1 filename
-```
-
-You can list the tape directory with
-
-```
-  tar tvf /dev/rmt0
-  tar tvf /dev/rmt1
-```
-And you can read back an individual file with
-
-```
-  tar xvf /dev/rmt0 filename
-  tar xvf /dev/rmt1 filename
-```
-or all files without the file name argument.
-
-
-**Using tu56 on RSX-11**
-
-Use the PDP-11 DECtape driver:
-
-```
-  cd 
-  cd Tu56/simh/pdp11_dectape_driver
-  chmod +x install
-  ./install
-```
-
-Building a new version of SimH with install will take a while, especially on slower Raspberry Pi
-models. The new TC driver generates a status byte in /tmp/tu56status, which can be used by tu56.
-
-Detailed instructions on how to use it with RSX-11 will be added here as soon as possible.
-The SimH device is tc, and the RSX-11, the drive is DT0: The device needs to be built with SYSGEN.
-
-**Using tu56 on the PiDP-8**
-
-Use the PDP-8 DECtape driver:
-
-```
-  cd 
-  cd Tu56/simh/pdp8_dectape_driver
-  chmod +x install
-  ./install
-```
-
-Building a new version of SimH with install will take a while, especially on slower Raspberry Pi
-models. The new DT driver adds generates a status byte in
-/tmp/tu56status, which can be used by tu56.
-
-Detailed instructions on how to use it will be added here as soon as possible.
-The SimH device is dt, and the drive is DT0.
 
 **Contributors**
 
