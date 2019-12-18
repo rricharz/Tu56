@@ -1,6 +1,8 @@
 Using tu56 on the PiDP-8
 ************************
 
+You need to run full Raspbian, not Raspbian lite, to display tu56 on the screen.
+
 Use the PDP-8 DECtape driver:
 
   cd 

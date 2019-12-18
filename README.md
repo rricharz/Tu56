@@ -11,6 +11,10 @@ New in version 0.3: Audio support on the HDMI screen for switches and reel motio
 This [video of a tu56 demo](https://youtu.be/Ye_s0w6C970) shows the tu56 in action on a PiDP-11 and an
 attached tek4010 terminal emulator.
 
+tu56 can of course also run in a window:
+
+![tu56 window](window.jpg?raw=true "tu56 window")
+
 The TU 56 DECtape had a very fast tape transportation speed for reads and writes of
 81-105 inches per second, and an average rotation speed of the reels of 500 rpm.
 
