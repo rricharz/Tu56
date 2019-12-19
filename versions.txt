@@ -1,0 +1,5 @@
+Version 0.4 of December 21, 2019
+********************************
+- Reel sound is not turned off during very large data transfers
+- Timing for PiDP-8 bootup from DECtape improved
+- Starting to document versions

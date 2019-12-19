@@ -11,14 +11,20 @@ Use the PDP-8 DECtape driver:
   ./install
 
 Building a new version of SimH with install will take a while, especially on slower Raspberry Pi
-models. The new DT driver adds generates a status byte in
-/tmp/tu56status, which can be used by tu56.
+models. The new DT driver generates a status byte in /tmp/tu56status, which can be used by tu56.
 
 Instructions for using DECtape provided by Warren Young:
 
+  MOUNTING a DECtape image
   ctrl-e
   Simulation stopped, PC: 01210 (JMP 1207)
   sim> att dt media/os8/al-4691c-sa-os8-v3d-1.1978.tu56
   DT0: 12b format, buffering file in memory
   sim> c
   DIR DTA0:
+  
+  BOOTING FROM DECtape
+  To reboot the PiDP-8 to DECtape:
+  set IF field to octal 3
+  then toggle Sing_Step, then set IF switches back to 0
+  

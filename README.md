@@ -1,10 +1,8 @@
 # tu56: DECtape TU 56 front panel emulator
 
-Simulation of a TU 56 DECtape front panel, version 0.3
+Simulation of a TU 56 DECtape front panel for SimH (PDP-8 and PDP-11 simulations)
 
 For the Raspberry Pi and other Linux systems.
-
-New in version 0.3: Audio support on the HDMI screen for switches and reel motions, see below.
 
 ![tu56 front panel](front.png?raw=true "tu56 front panel")
 
@@ -160,6 +158,10 @@ There are currently 3 drivers available:
 
 Improved instructions are very much appreciated. Please send improved versions of these
 instructions, and instructions for other operating systems to rricharz77@gmail.com
+
+**Versions**
+
+See [versions](versions.txt)
 
 
 **Contributors**

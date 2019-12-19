@@ -234,7 +234,7 @@ static void do_logic()
 	if (((glob.tape1 != 0) || (glob.tape2 != 0)) && (glob.reelsound == 0)) {
 			glob.reelsound = 1;
 			// printf("turn reel sound on , tape1=%d, tape2=%d\n", glob.tape1, glob.tape2);
-			if (glob.argAudio) system("/usr/bin/mpg321 -q -l 4 sound/reels.mp3 2> /dev/null &");
+			if (glob.argAudio) system("/usr/bin/mpg321 -q -l 0 sound/reels.mp3 2> /dev/null &");
 		}
 }
 
@@ -354,7 +354,7 @@ int main(int argc, char *argv[])
   glob.argAudio = 0;
   int firstArg = 1;
   
-  printf("tu56 version 0.3\n");
+  printf("tu56 version 0.4\n");
   
   system("pkill mpg321");
   
