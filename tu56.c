@@ -204,7 +204,7 @@ static void do_logic()
 			if ((glob.last_remote_status & TSTATE_BACKWARDS) != (glob.remote_status & TSTATE_BACKWARDS)) {
 				// tape direction has changed, insert a delay
 				printf("tape direction change\n");
-				glob.direction_change_countdown = 20;
+				glob.direction_change_countdown = 3;
 			}
 		
 		// set the lights and motors
