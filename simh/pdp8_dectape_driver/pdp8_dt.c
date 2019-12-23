@@ -272,7 +272,7 @@ extern UNIT cpu_unit;
 
 int32 dtsa = 0;                                         /* status A */
 int32 dtsb = 0;                                         /* status B */
-int32 dt_ltime = 120;                                   /* interline time */
+int32 dt_ltime = 40;                                    /* interline time */
 int32 dt_dctime = 40000;                                /* decel time */
 int32 dt_substate = 0;
 int32 dt_logblk = 0;
@@ -520,7 +520,7 @@ if (new_mving & ~prev_mving) {                          /* start? */
     if (dt_setpos (uptr))                               /* update pos */
         return;
     sim_cancel (uptr);                                  /* stop current */
-    sim_activate (uptr, dt_dctime - (dt_dctime >> 2));  /* schedule acc */
+    sim_activate_abs (uptr, dt_dctime - (dt_dctime >> 2));  /* schedule acc */
     DTS_SETSTA (DTS_ACCF | new_dir, 0);                 /* state = accel */
     DTS_SET2ND (DTS_ATSF | new_dir, new_fnc);           /* next = fnc */
     return;
@@ -531,7 +531,7 @@ if (prev_mving & ~new_mving) {                          /* stop? */
         if (dt_setpos (uptr))                           /* update pos */
             return;
         sim_cancel (uptr);                              /* stop current */
-        sim_activate (uptr, dt_dctime);                 /* schedule decel */
+        sim_activate_abs (uptr, dt_dctime);                 /* schedule decel */
         }
     DTS_SETSTA (DTS_DECF | prev_dir, 0);                /* state = decel */
     return;
@@ -542,7 +542,7 @@ if (prev_dir ^ new_dir) {                               /* dir chg? */
         if (dt_setpos (uptr))                           /* update pos */
             return;
         sim_cancel (uptr);                              /* stop current */
-        sim_activate (uptr, dt_dctime);                 /* schedule decel */
+        sim_activate_abs (uptr, dt_dctime);                 /* schedule decel */
         }
     DTS_SETSTA (DTS_DECF | prev_dir, 0);                /* state = decel */
     DTS_SET2ND (DTS_ACCF | new_dir, 0);                 /* next = accel */
@@ -554,7 +554,7 @@ if (prev_mot < DTS_ACCF) {                              /* not accel/at speed? *
     if (dt_setpos (uptr))                               /* update pos */
         return;
     sim_cancel (uptr);                                  /* cancel cur */
-    sim_activate (uptr, dt_dctime - (dt_dctime >> 2));  /* sched accel */
+    sim_activate_abs (uptr, dt_dctime - (dt_dctime >> 2));  /* sched accel */
     DTS_SETSTA (DTS_ACCF | new_dir, 0);                 /* state = accel */
     DTS_SET2ND (DTS_ATSF | new_dir, new_fnc);           /* next = fnc */
     return;
@@ -674,7 +674,7 @@ switch (fnc) {                                          /* case function */
         return;
         }
 
-sim_activate (uptr, ABS (newpos - ((int32) uptr->pos)) * dt_ltime);
+sim_activate_abs (uptr, ABS (newpos - ((int32) uptr->pos)) * dt_ltime);
 return;
 }
 
@@ -779,7 +779,7 @@ switch (mot) {
             return IORETURN (dt_stopoffr, STOP_DTOFF);
         uptr->STATE = DTS_NXTSTA (uptr->STATE);         /* advance state */
         if (uptr->STATE)                                /* not stopped? */
-            sim_activate (uptr, dt_dctime - (dt_dctime >> 2));  /* must be reversing */
+            sim_activate_abs (uptr, dt_dctime - (dt_dctime >> 2));  /* must be reversing */
         return SCPE_OK;
 
     case DTS_ACCF: case DTS_ACCR:                       /* accelerating */
@@ -819,7 +819,7 @@ switch (fnc) {                                          /* at speed, check fnc *
             dt_seterr (uptr, DTB_TIM);                  /* timing error */
             return SCPE_OK;
             }
-        sim_activate (uptr, DTU_LPERB (uptr) * dt_ltime);/* sched next block */
+        sim_activate_abs (uptr, DTU_LPERB (uptr) * dt_ltime);/* sched next block */
         M[DT_WC] = (M[DT_WC] + 1) & 07777;              /* incr word cnt */
         ma = DTB_GETMEX (dtsb) | M[DT_CA];              /* get mem addr */
         if (MEM_ADDR_OK (ma))                           /* store block # */
@@ -877,10 +877,10 @@ switch (fnc) {                                          /* at speed, check fnc *
             /* fall through */
         case DTO_WCO:                                   /* wc ovf, not sob */
             if (wrd != (dir? 0: DTU_BSIZE (uptr) - 1))  /* not last? */
-                sim_activate (uptr, DT_WSIZE * dt_ltime);
+                sim_activate_abs (uptr, DT_WSIZE * dt_ltime);
             else {
                 dt_substate = dt_substate | DTO_SOB;
-                sim_activate (uptr, ((2 * DT_HTLIN) + DT_WSIZE) * dt_ltime);
+                sim_activate_abs (uptr, ((2 * DT_HTLIN) + DT_WSIZE) * dt_ltime);
                 if (((dtsa & DTA_MODE) == 0) || (M[DT_WC] == 0))
                     dtsb = dtsb | DTB_DTF;              /* set DTF */
                 }
@@ -889,7 +889,7 @@ switch (fnc) {                                          /* at speed, check fnc *
         case DTO_WCO | DTO_SOB:                         /* next block */        
             if (wrd == (dir? 0: DTU_BSIZE (uptr)))      /* end of block? */
                 dt_seterr (uptr, DTB_TIM);              /* timing error */
-            else sim_activate (uptr, DT_WSIZE * dt_ltime);
+            else sim_activate_abs (uptr, DT_WSIZE * dt_ltime);
             break;
             }
 
@@ -940,10 +940,10 @@ switch (fnc) {                                          /* at speed, check fnc *
             if (M[DT_WC] == 0)
                 dt_substate = DTO_WCO;
             if (wrd != (dir? 0: DTU_BSIZE (uptr) - 1))  /* not last? */
-                sim_activate (uptr, DT_WSIZE * dt_ltime);
+                sim_activate_abs (uptr, DT_WSIZE * dt_ltime);
             else {
                 dt_substate = dt_substate | DTO_SOB;
-                sim_activate (uptr, ((2 * DT_HTLIN) + DT_WSIZE) * dt_ltime);
+                sim_activate_abs (uptr, ((2 * DT_HTLIN) + DT_WSIZE) * dt_ltime);
                 if (((dtsa & DTA_MODE) == 0) || (M[DT_WC] == 0))
                     dtsb = dtsb | DTB_DTF;              /* set DTF */
                 }
@@ -983,7 +983,7 @@ switch (fnc) {                                          /* at speed, check fnc *
                     dat = dt_comobv (dat);
                 }
             else dat = dt_gethdr (uptr, blk, relpos, dir);      /* get hdr */
-            sim_activate (uptr, DT_WSIZE * dt_ltime);
+            sim_activate_abs (uptr, DT_WSIZE * dt_ltime);
             if (MEM_ADDR_OK (ma))                       /* mem addr legal? */
                 M[ma] = dat;
             if (M[DT_WC] == 0)
@@ -1029,7 +1029,7 @@ switch (fnc) {                                          /* at speed, check fnc *
                     uptr->hwmark = ba + 1;
                 }
                                                         /* ignore hdr */
-            sim_activate (uptr, DT_WSIZE * dt_ltime);
+            sim_activate_abs (uptr, DT_WSIZE * dt_ltime);
             if (M[DT_WC] == 0)
                 dt_substate = DTO_WCO;
             if (((dtsa & DTA_MODE) == 0) || (M[DT_WC] == 0))
@@ -1133,7 +1133,7 @@ if (mot >= DTS_ACCF) {                                  /* ~stopped or stopping?
     sim_cancel (uptr);                                  /* cancel activity */
     if (dt_setpos (uptr))                               /* update position */
         return;
-    sim_activate (uptr, dt_dctime);                     /* sched decel */
+    sim_activate_abs (uptr, dt_dctime);                     /* sched decel */
     DTS_SETSTA (DTS_DECF | (mot & DTS_DIR), 0);         /* state = decel */
     }
 else DTS_SETSTA (mot, 0);                               /* clear 2nd, 3rd */
@@ -1150,7 +1150,7 @@ int32 newpos;
 if (dir)                                                /* rev? rev ez */
     newpos = DT_EZLIN - DT_WSIZE;
 else newpos = DTU_FWDEZ (uptr) + DT_WSIZE;              /* fwd? fwd ez */
-sim_activate (uptr, ABS (newpos - ((int32) uptr->pos)) * dt_ltime);
+sim_activate_abs (uptr, ABS (newpos - ((int32) uptr->pos)) * dt_ltime);
 return;
 }
 
@@ -1195,7 +1195,7 @@ for (i = 0; i < DT_NUMDR; i++) {                        /* stop all activity */
             if (dt_setpos (uptr))                       /* update pos */
                 continue;
             sim_cancel (uptr);
-            sim_activate (uptr, dt_dctime);             /* sched decel */
+            sim_activate_abs (uptr, dt_dctime);             /* sched decel */
             DTS_SETSTA (DTS_DECF | (prev_mot & DTS_DIR), 0);
             }
         }
