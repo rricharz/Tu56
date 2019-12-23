@@ -18,6 +18,17 @@ The TU 56 DECtape had a very fast tape transportation speed for reads and writes
 
 A driver to use tu56 with the PiDP-11 and PiDP-8 are included.
 
+**Hardware requirements**
+
+This TU 56 simulator has been tested on the PiDP-11 and PiDP-8 using a Raspberry Pi 4B.
+A considerable effort has been made to reduce the CPU usage to acceptable levels. It
+should therefore also work on Raspberry PI 3B  and Raspberry Pi 3B+ models. Please send
+your positive or negative feedback on using tu56 on Raspberry Pi 3 models to
+rricharz77@gmail.com, so that I can update these requirements.
+
+Slower Raspberry Pi models are not recommended.
+
+
 **Download the program**
 
 I recommend using "git clone" to download the program. This allows for very easy upgrades.
@@ -108,9 +119,6 @@ approx. 35 seconds.
 realistic. I would be very interested in a more realistic demo.
 
 **Turning on realistic sounds**
-
-I recommend using a Raspberry Pi 4 to achieve an optimal synchronization between the audio and video
-streams.
 
 Install "mpg321" using
 

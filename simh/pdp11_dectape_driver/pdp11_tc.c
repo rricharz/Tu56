@@ -25,6 +25,7 @@
 
    tc           TC11/TU56 DECtape
 
+   23-Dec-19	RR	Realistic tape timing and status byte for tu56 added
    15-Mar-17    RMS     Fixed to defer error interrupts (Paul Koning)
    14-Mar-17    RMS     Fixed spurious interrupt when setting GO (Paul Koning)
    04-Dec-16    RMS     Revised to model TCCM correctly (Josh Dersch)
@@ -1623,5 +1624,5 @@ return SCPE_OK;
 
 const char *dt_description (DEVICE *dptr)
 {
-return "TC11/TU56 DECtape controller";
+return "TC11/TU56 DECtape controller (for tu56)";
 }

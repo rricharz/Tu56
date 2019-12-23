@@ -25,6 +25,7 @@
 
    dt           TC08/TU56 DECtape
 
+   23-Dec-19	RR	Realistic tape timing and status byte for tu56 added
    15-Mar-17    RMS     Fixed dt_seterr to clear successor states
    17-Sep-13    RMS     Changed to use central set_bootpc routine
    23-Jun-06    RMS     Fixed switch conflict in ATTACH
@@ -1407,5 +1408,5 @@ return detach_unit (uptr);
 
 const char *dt_description (DEVICE *dptr)
 {
-return "TC08/TU56 DECtape";
+return "TC08/TU56 DECtape (for tu56)";
 }

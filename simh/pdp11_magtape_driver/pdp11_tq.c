@@ -25,8 +25,7 @@
 
    tq           TQK50 tape controller
 
-   10-Nov-19	RR	Realistic tape timing and status byte added
-
+   23-Dec-19	RR	Realistic tape timing and status byte for tu56 added
    23-Oct-13    RMS     Revised for new boot setup routine
    23-Jan-12    MP      Added missing support for Logical EOT detection while
                         positioning.
@@ -2485,6 +2484,6 @@ return SCPE_OK;
 
 const char *tq_description (DEVICE *dptr)
 {
-return (UNIBUS) ? "TUK50 TMSCP magnetic tape controller" :
-                  "TQK50 TMSCP magnetic tape controller";
+return (UNIBUS) ? "TUK50 TMSCP magnetic tape controller (for tu56)" :
+                  "TQK50 TMSCP magnetic tape controller (for tu56)";
 }
