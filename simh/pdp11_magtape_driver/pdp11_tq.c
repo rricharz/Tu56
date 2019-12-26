@@ -271,11 +271,11 @@ int32 tq_typ = INIT_TYPE;                               /* device type */
 
 /* constants, variables and functions for timed operations and status bytes file */
 
-#define TSTATE_ONLINE		 1		// Turns the online light on
-#define TSTATE_DRIVE1		 2		// Selects drive 0 or 1
-#define TSTATE_BACKWARDS	 4		// Sets the direction
-#define TSTATE_SEEK		     8		// Spins the reels
-#define TSTATE_READ		    16		// Spins the reels
+#define TSTATE_ONLINE		1		// Turns the online light on
+#define TSTATE_DRIVE1		2		// Selects drive 0 or 1
+#define TSTATE_BACKWARDS	4		// Sets the direction
+#define TSTATE_SEEK		8		// Spins the reels
+#define TSTATE_READ		16		// Spins the reels
 #define TSTATE_WRITE		32		// Turns the write light on and spins the reels
 
 int32 tq_savpkt;
@@ -296,7 +296,8 @@ void tq_setStatus()
 
 	if (tq_statusFile != 0) {
 		fseek(tq_statusFile,0L,SEEK_SET);
-		putc(32 + tq_status,tq_statusFile);
+		// putc(32 + tq_status,tq_statusFile);
+		fprintf(tq_statusFile,"%c%d\n", 32 + tq_status, tq_savedpos); 
 		fflush(tq_statusFile);
 	}
 }
@@ -1359,6 +1360,7 @@ void tq_io_complete (UNIT *uptr, t_stat status)
 	else
 		ttime = 200000;
     if (ttime > 20000000) ttime = 20000000;
+    tq_savedpos = up->pos;  // status transmits new position
     if (up) tq_setStatus();
     // sim_activate_notbefore (uptr, uptr->iostarttime+tq_xtime);
     sim_activate_after_abs (uptr, ttime);
@@ -2484,6 +2486,6 @@ return SCPE_OK;
 
 const char *tq_description (DEVICE *dptr)
 {
-return (UNIBUS) ? "TUK50 TMSCP magnetic tape controller (for tu56)" :
-                  "TQK50 TMSCP magnetic tape controller (for tu56)";
+return (UNIBUS) ? "TUK50 TMSCP magnetic tape controller (for tu56/tu77)" :
+                  "TQK50 TMSCP magnetic tape controller (for tu56/tu77)";
 }
