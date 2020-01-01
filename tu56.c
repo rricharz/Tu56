@@ -47,7 +47,7 @@
 // Tape motion on and off times are extended to a minimal time of
 // TIME_INTERVAL * C_TAPE to make them visible 
 
-#define TIME_INTERVAL    25		// timer interval in msec
+#define TIME_INTERVAL    30		// timer interval in msec
 #define C_ANIMATION		  4		// blurred tape animation cycles
 #define C_TAPE            8     // tape on off minimum cycles
 
@@ -210,8 +210,7 @@ static void do_logic()
 	if ((glob.buttonstate[2] == 1) || (glob.buttonstate[5] == 1)) {
 		// if remote is set in a drive
 		glob.remote_status = getStatus();
-		if (glob.last_remote_status != glob.remote_status)
-			printf("remote state = 0x%02x\n", glob.remote_status);
+		// if (glob.last_remote_status != glob.remote_status) printf("remote state = 0x%02x\n", glob.remote_status);
 		
 		// set the lights and motors
 		// for now it also flips the write enable button if necessary
@@ -259,9 +258,10 @@ void extend_short_tape_events()
 			glob.updated = 1;
 		}
 		else {
-			// do not yet change tape status
-			glob.tape1 = last_tape1;
-			// printf("Extending tape 1 change\n");
+			// do not turn tape off yet
+			if (last_tape1)
+				glob.tape1 = last_tape1;
+			// printf("Extending tape 1 turnoff\n");
 		}
 	}
 	if (tape1_counter > 0) tape1_counter--;
@@ -278,8 +278,9 @@ void extend_short_tape_events()
 			glob.updated = 1;
 		}
 		else {
-			// do not yet change tape status
-			glob.tape2 = last_tape2;
+			// do not turn tape 2 off yet
+			if (last_tape2)
+				glob.tape2 = last_tape2;
 			// printf("Extending tape 2 change\n");
 		}
 	}
@@ -295,7 +296,7 @@ static gboolean on_timer_event(GtkWidget *widget)
 	
 	do_logic();
 	glob.updated = 0;
-	extend_short_tape_events();	
+	// extend_short_tape_events();	
 	if ((glob.last_remote_status != glob.remote_status) || glob.updated)
 		gtk_widget_queue_draw(widget);
 	else if (((timer_counter % C_ANIMATION) == 0) && (glob.tape1 || glob.tape2))
@@ -409,7 +410,7 @@ int main(int argc, char *argv[])
   glob.argAudio = 0;
   int firstArg = 1;
   
-  printf("tu56 version 0.5\n");
+  printf("tu56 version 0.6\n");
   
   system("pkill mpg321");
   

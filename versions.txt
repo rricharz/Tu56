@@ -1,3 +1,7 @@
+Version 0.6 of January 1, 2020
+******************************
+- Further improvements of very stort tape read/writes
+
 Version 0.5 of December 23, 2019
 ********************************
 - Better display of very stort tape read/writes
