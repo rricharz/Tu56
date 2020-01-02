@@ -1,4 +1,4 @@
-# tu56: DECtape TU 56 front panel emulator
+# DECtape TU 56 front panel emulator
 
 Simulation of a TU 56 DECtape front panel for SimH (PDP-8 and PDP-11 simulations)
 

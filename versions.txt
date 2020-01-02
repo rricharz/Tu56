@@ -1,12 +1,12 @@
-Version 0.6 of January 1, 2020
+Version 0.7 of January 2, 2020
 ******************************
-- Further improvements of very stort tape read/writes
+- Reduced CPU usage by separating status and screen refresh timing
+- Improved visibility of one sector read/writes
 
 Version 0.5 of December 23, 2019
 ********************************
 - Better display of very stort tape read/writes
 - Reduce CPU usage during motion blurring
-
 
 Version 0.4 of December 21, 2019
 ********************************

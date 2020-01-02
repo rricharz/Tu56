@@ -47,7 +47,8 @@
 // Tape motion on and off times are extended to a minimal time of
 // TIME_INTERVAL * C_TAPE to make them visible 
 
-#define TIME_INTERVAL    30		// timer interval in msec
+#define TIME_INTERVAL    10		// timer interval in msec
+#define DRAW_MULTIPLIER  10
 #define C_ANIMATION		  4		// blurred tape animation cycles
 #define C_TAPE            8     // tape on off minimum cycles
 
@@ -209,7 +210,6 @@ static void do_logic()
 	
 	if ((glob.buttonstate[2] == 1) || (glob.buttonstate[5] == 1)) {
 		// if remote is set in a drive
-		glob.remote_status = getStatus();
 		// if (glob.last_remote_status != glob.remote_status) printf("remote state = 0x%02x\n", glob.remote_status);
 		
 		// set the lights and motors
@@ -239,69 +239,31 @@ static void do_logic()
 		}
 }
 
-void extend_short_tape_events()
-// extend short tape on/off events to make them visible
-{
-	static int last_tape1 = -1;
-	static int last_tape2 = -1;	
-	static int tape1_counter = 0;
-	static int tape2_counter = 0;
-	
-	if (last_tape1 != glob.tape1) {
-		if (tape1_counter == 0) {
-			// start counting
-			tape1_counter = C_TAPE + 1;
-		}
-		else if (tape1_counter == 1) {
-			// stop counting
-			tape1_counter = 0;
-			glob.updated = 1;
-		}
-		else {
-			// do not turn tape off yet
-			if (last_tape1)
-				glob.tape1 = last_tape1;
-			// printf("Extending tape 1 turnoff\n");
-		}
-	}
-	if (tape1_counter > 0) tape1_counter--;
-	last_tape1 = glob.tape1;
-	
-	if (last_tape2 != glob.tape2) {
-		if (tape2_counter == 0) {
-			// start counting
-			tape2_counter = C_TAPE + 1;
-		}
-		else if (tape2_counter == 1) {
-			// stop counting
-			tape2_counter = 0;
-			glob.updated = 1;
-		}
-		else {
-			// do not turn tape 2 off yet
-			if (last_tape2)
-				glob.tape2 = last_tape2;
-			// printf("Extending tape 2 change\n");
-		}
-	}
-	if (tape2_counter > 0) tape2_counter--;
-	last_tape2 = glob.tape2;
-}
-
 static gboolean on_timer_event(GtkWidget *widget)
 {
 	static int timer_counter = 0;
 	
 	timer_counter++;
 	
+	if (timer_counter < DRAW_MULTIPLIER) {
+		if ((glob.buttonstate[2] == 1) || (glob.buttonstate[5] == 1)) {
+			// if remote is set in a drive
+			glob.remote_status |= getStatus();			
+		}
+		else
+			glob.remote_status = 0;
+		return TRUE;
+	}
+	timer_counter = 0;
+	
 	do_logic();
-	glob.updated = 0;
-	// extend_short_tape_events();	
+	glob.updated = 0;	
 	if ((glob.last_remote_status != glob.remote_status) || glob.updated)
 		gtk_widget_queue_draw(widget);
-	else if (((timer_counter % C_ANIMATION) == 0) && (glob.tape1 || glob.tape2))
+	else if (glob.tape1 || glob.tape2)
 		gtk_widget_queue_draw(widget);
 	glob.last_remote_status = glob.remote_status;
+	glob.remote_status = 0;
 	return TRUE;
 }
 
@@ -410,7 +372,7 @@ int main(int argc, char *argv[])
   glob.argAudio = 0;
   int firstArg = 1;
   
-  printf("tu56 version 0.6\n");
+  printf("tu56 version 0.7\n");
   
   system("pkill mpg321");
   
