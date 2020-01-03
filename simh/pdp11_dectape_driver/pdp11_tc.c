@@ -1450,6 +1450,9 @@ t_stat dt_detach (UNIT* uptr)
 {
 int32 u = uptr - dt_dev.units;
 
+tc_status = 0;
+tc_setStatus();
+
 if (!(uptr->flags & UNIT_ATT))
     return SCPE_OK;
 if (sim_is_active (uptr)) {                             /* active? cancel op */

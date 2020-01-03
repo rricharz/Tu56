@@ -2,6 +2,9 @@
 Using tu56 with SimH on the PiDP-11, running 2.11 BSD
 *****************************************************
 
+Using tu56 as a tape device:
+****************************
+
 First, install the modified TQ driver in SimH as follows. It's a good idea to make a
 backup copy of /opt/pidp11 before doing that, in case something goes wrong.
 
@@ -65,4 +68,24 @@ And you can read back an individual file with
   tar xvf /dev/rmt1 filename
 
 or all files without the file name argument.
+
+Using tu56 as a DECtape device:
+*******************************
+
+This mode requires the installation of a modified kernel for DECtape. With thies
+kernel, the DECtapes can be used like floppy disks:
+
+For details, see https://github.com/vlait/211bsd-tc11
+
+Finally, install the modified TC driver in SimH as follows. It's a good idea to make a
+backup copy of /opt/pidp11 before doing that, in case something goes wrong.
+
+  cd 
+  cd Tu56/simh/pdp11_dectape_driver
+  chmod +x install
+  ./install
+
+Building a new version of SimH with install will take a while, especially on slower
+Raspberry Pimodels. The new TQ driver adds realistic timing and generates a status
+byte in /tmp/tu56status, which can be used by tu56.
 
