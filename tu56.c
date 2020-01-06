@@ -231,6 +231,12 @@ static void do_logic()
 	}
 	else
 		glob.remote_status = 0;
+		
+	// stop tape for one frame if direction has changed
+	if ((glob.last_remote_status & TSTATE_BACKWARDS) != (glob.remote_status & TSTATE_BACKWARDS)) {
+		glob.tape1 = 0;
+		glob.tape2 = 0;
+	}
 	
 	if (((glob.tape1 != 0) || (glob.tape2 != 0)) && (glob.reelsound == 0)) {
 			glob.reelsound = 1;
@@ -372,7 +378,7 @@ int main(int argc, char *argv[])
   glob.argAudio = 0;
   int firstArg = 1;
   
-  printf("tu56 version 0.7\n");
+  printf("tu56 version 0.8\n");
   
   system("pkill mpg321");
   
