@@ -179,7 +179,7 @@ The pictures used to make the animated screen have been provided by David Gesswe
 had the idea to use rotational motion blurring for the rotating tape reels. Johnny Bilquist
 has helped me to understand many important details of DECtapes and magtapes and how they are
 used on the PDP-11. Neal G. has helped to setup a RSX-11 test system, and Warren Young to
-setup a PDP-8 test system.
+setup a PDP-8 test system. Ville Laitinen has written a DECtape kernel driver for 2.11 BSD.
 
 
 **The usual disclaimer**

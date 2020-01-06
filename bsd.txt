@@ -14,7 +14,7 @@ backup copy of /opt/pidp11 before doing that, in case something goes wrong.
   ./install
 
 Building a new version of SimH with install will take a while, especially on slower
-Raspberry Pimodels. The new TQ driver adds realistic timing and generates a status
+Raspberry Pi models. The new TQ driver adds realistic timing and generates a status
 byte in /tmp/tu56status, which can be used by tu56.
 
 If you want to go back to the original driver, type
@@ -49,8 +49,8 @@ Talking to both tape drives with 2.11 BSD
 Put the following in your BSD boot.ini:
 
   set tq enabled
-  attach tq0 /home/pi/bsdtapes/tq0tape.tap
-  attach tq1 /home/pi/bsdtapes/tq1tape.tap
+  attach tq0 tq0tape.tap
+  attach tq1 tq1tape.tap
 
 Now you can use tar to write to drive 0 and drive 1. The default is drive 0.
 
@@ -77,6 +77,21 @@ kernel, the DECtapes can be used like floppy disks:
 
 For details, see https://github.com/vlait/211bsd-tc11
 
+Put the following in your boot.ini
+
+  ; enable 2 DECtape devices
+  set tc enabled
+  set tc address=17777340
+  set tc vector=214
+  attach tc0 tu0.tu56
+  attach tc1 tu1.tu56
+
+and at the very end of boot.ini, after the "boot rq0":
+
+  ; flush DECtape buffers
+  detach tc0
+  detach tc1
+
 Finally, install the modified TC driver in SimH as follows. It's a good idea to make a
 backup copy of /opt/pidp11 before doing that, in case something goes wrong.
 
@@ -86,6 +101,6 @@ backup copy of /opt/pidp11 before doing that, in case something goes wrong.
   ./install
 
 Building a new version of SimH with install will take a while, especially on slower
-Raspberry Pimodels. The new TQ driver adds realistic timing and generates a status
+Raspberry Pi models. The new TC driver adds realistic timing and generates a status
 byte in /tmp/tu56status, which can be used by tu56.
 
