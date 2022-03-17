@@ -38,7 +38,7 @@ I recommend using "git clone" to download the program. This allows for very easy
   sudo apt-get upgrade
   sudo apt-get install git
   cd
-  git clone --depth 1 git://github.com/rricharz/Tu56
+  git clone --depth 1 https://github.com/rricharz/Tu56
   cd Tu56
 ```
 
